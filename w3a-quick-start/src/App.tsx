@@ -1,17 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useWeb3AuthConnect, useWeb3AuthDisconnect } from "@web3auth/modal/react";
 import { useSolanaWallet } from "@web3auth/modal/react/solana";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 export default function MinimalTest() {
   const { connect, isConnected, connectorName, loading, error: loginError } = useWeb3AuthConnect();
   const { disconnect, loading: disconnecting, error: logoutError } = useWeb3AuthDisconnect();
-  const { accounts, error: solanaError } = useSolanaWallet();
+  const { accounts, connection, error: solanaError } = useSolanaWallet();
+
+  // SOL Balance state
+  const [balance, setBalance] = useState<number | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(false);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
 
   const addressAvailable = accounts && accounts.length > 0;
+
+  const fetchBalance = async () => {
+    if (connection && addressAvailable) {
+      try {
+        setLoadingBalance(true);
+        setBalanceError(null);
+        const lamports = await connection.getBalance(new PublicKey(accounts[0]));
+        setBalance(lamports / LAMPORTS_PER_SOL);
+      } catch (err) {
+        setBalanceError((err as Error).message || "Unknown error fetching balance");
+        setBalance(null);
+      } finally {
+        setLoadingBalance(false);
+      }
+    } else {
+      setBalance(null);
+    }
+  };
+
+  useEffect(() => {
+    fetchBalance();
+    // Only re-run when the account or connection changes
+    // eslint-disable-next-line
+  }, [connection, accounts]);
 
   return (
     <div style={{
@@ -76,6 +106,26 @@ export default function MinimalTest() {
             <i style={{ color: "#888" }}>No address found</i>
           )}
         </div>
+        <div>
+          <strong>Balance:</strong>{" "}
+          {loadingBalance
+            ? "Loading..."
+            : balance !== null
+            ? `${balance.toFixed(4)} SOL`
+            : balanceError
+            ? `Error: ${balanceError}`
+            : "--"}
+          {addressAvailable && (
+            <button
+              onClick={fetchBalance}
+              style={{
+                marginLeft: 8, fontSize: 11, padding: "2px 8px", cursor: "pointer"
+              }}
+            >
+              Refresh
+            </button>
+          )}
+        </div>
         {solanaError && (
           <div style={{ color: "red", marginTop: 8 }}>
             Solana Hook Error: {solanaError.message}
@@ -105,7 +155,7 @@ export default function MinimalTest() {
         </div>
       </div>
       <p style={{ fontSize: 13, marginTop: 14, color: "#697484" }}>
-        Use social/email login, and your Solana address will appear if login is successful and properly configured. No Phantom/MetaMask needed!
+        Use social/email login, and your Solana address and balance will appear if login is successful and properly configured. No Phantom/MetaMask needed!
       </p>
     </div>
   );
