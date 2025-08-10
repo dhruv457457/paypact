@@ -16,12 +16,25 @@ export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Invisible, one-line way to satisfy Firestore rules in dev:
-export async function ensureFirebaseAuth() {
-  return new Promise<void>((resolve) => {
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) await signInAnonymously(auth);
-      resolve();
+// Make it idempotent + truly wait for a user
+let readyPromise: Promise<void> | null = null;
+
+export function ensureFirebaseAuth(): Promise<void> {
+  if (readyPromise) return readyPromise;
+
+  readyPromise = new Promise<void>((resolve, reject) => {
+    const stop = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        stop(); resolve(); return;
+      }
+      try {
+        await signInAnonymously(auth);
+        // Wait for the next auth state that contains a user
+      } catch (e) {
+        stop(); reject(e);
+      }
     });
   });
+
+  return readyPromise;
 }

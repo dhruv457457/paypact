@@ -1,8 +1,12 @@
+// src/pages/MyPacts.tsx
 import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useSolanaWallet } from "@web3auth/modal/react/solana";
 import { ensureFirebaseAuth } from "../lib/firebase";
-import { listPactsForWallet, getPact, findParticipantIndexByWallet } from "../lib/pacts";
-import { Link } from "react-router-dom";
+import {
+  listPactsForWallet,
+  findParticipantIndexByWallet,
+} from "../lib/pacts";
 
 type PactDoc = {
   id: string;
@@ -19,37 +23,42 @@ type PactDoc = {
 export default function MyPacts() {
   const { accounts } = useSolanaWallet();
   const wallet = accounts?.[0] || "";
+
+  const [ready, setReady] = useState(false);
   const [loading, setLoading] = useState(true);
   const [pacts, setPacts] = useState<PactDoc[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
-  useEffect(() => {
-    ensureFirebaseAuth();
-  }, []);
-
+  // 1) Wait for Firebase auth (anon in dev) BEFORE any Firestore reads
   useEffect(() => {
     (async () => {
-      if (!wallet) { setLoading(false); return; }
       try {
-        // First try indexed query
+        await ensureFirebaseAuth();
+        setReady(true);
+      } catch (e: any) {
+        setErr(e?.message || "Auth failed");
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  // 2) Load pacts once auth is ready and wallet is connected
+  useEffect(() => {
+    if (!ready) return;
+    if (!wallet) { setLoading(false); return; }
+
+    (async () => {
+      setLoading(true);
+      try {
         const indexed = await listPactsForWallet(wallet);
-
-        // Fallback (older docs without participantWallets): fetch recent by createdBy and filter in client
-        let finalList: PactDoc[] = indexed as any;
-
-        if (finalList.length === 0) {
-          // If you want a broader fallback, you could fetch recent pacts and filter,
-          // but that can be heavy. We'll keep it simple for now.
-        }
-
-        setPacts(finalList as PactDoc[]);
+        setPacts(indexed as any);
       } catch (e: any) {
         setErr(e?.message || "Failed to load pacts");
       } finally {
         setLoading(false);
       }
     })();
-  }, [wallet]);
+  }, [ready, wallet]);
 
   const rows = useMemo(() => {
     return pacts.map((p) => {
@@ -62,11 +71,7 @@ export default function MyPacts() {
   }, [pacts, wallet]);
 
   if (!wallet) {
-    return (
-      <div className="p-6">
-        Please connect your wallet first.
-      </div>
-    );
+    return <div className="p-6">Please connect your wallet first.</div>;
   }
 
   if (loading) return <div className="p-6">Loading…</div>;
@@ -90,16 +95,14 @@ export default function MyPacts() {
                   <div>
                     <div className="font-medium">{pact.name}</div>
                     <div className="text-sm text-gray-600">
-                      Amount/person: <b>{pact.amountPerPerson}</b> •
-                      Receiver: <span className="font-mono">{pact.receiverWallet}</span> •
+                      Amount/person: <b>{pact.amountPerPerson}</b> •{" "}
+                      Receiver: <span className="font-mono">{pact.receiverWallet}</span> •{" "}
                       Due: {pact.dueDate ? new Date(pact.dueDate).toLocaleString() : "-"}
                     </div>
                     <div className="text-sm mt-1">
                       Group status: {paidCount}/{total} paid
                     </div>
-                    <div className="text-sm">
-                      Your status: {myStatus}
-                    </div>
+                    <div className="text-sm">Your status: {myStatus}</div>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -113,11 +116,14 @@ export default function MyPacts() {
                     )}
                   </div>
                 </div>
+
                 {myLink && !me?.paid && (
                   <div className="mt-2">
                     <button
                       className="text-xs px-2 py-1 border rounded"
-                      onClick={() => navigator.clipboard.writeText(window.location.origin + myLink)}
+                      onClick={() =>
+                        navigator.clipboard.writeText(window.location.origin + myLink)
+                      }
                     >
                       Copy my payment link
                     </button>
