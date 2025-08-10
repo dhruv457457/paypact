@@ -18,4 +18,5 @@
   },
   "include": ["src", "src/components/sendTransaction.tsx", "src/components/switchNetwork.tsx", "src/components/writeContract.tsx", "src/components/getBalance.tsx", "functions/src", "functions/tsconfig.json"],
   "references": [{ "path": "./tsconfig.node.json" }]
+  ,"exclude": ["api"]  
 }

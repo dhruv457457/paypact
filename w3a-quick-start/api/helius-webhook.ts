@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// api/helius-webhook.ts
 import admin from 'firebase-admin';
 
 let app: admin.app.App | null = null;
@@ -11,19 +11,19 @@ function initAdmin() {
   return app;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+
   try {
     initAdmin();
     const db = admin.firestore();
-    const events = Array.isArray(req.body) ? req.body : [req.body];
 
+    const events = Array.isArray(req.body) ? req.body : [req.body];
     for (const ev of events) {
       const signature: string | undefined = ev?.signature;
       const accountKeys: string[] = ev?.transaction?.message?.accountKeys ?? [];
       const nativeTransfers: any[] = ev?.nativeTransfers ?? [];
 
-      // reference lookup: pay_refs/{reference} -> { pactId, index }
       let found: { pactId: string; index: number; reference: string } | null = null;
       for (const key of accountKeys) {
         const refSnap = await db.collection('pay_refs').doc(key).get();
@@ -43,7 +43,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const expectedReceiver: string = pact.receiverWallet;
       const expectedAmount: number = Number(pact.amountPerPerson);
 
-      // validate SOL transfer to receiver
       let paidOk = false;
       const toReceiver = nativeTransfers.find((t: any) => String(t?.toUserAccount) === expectedReceiver);
       if (toReceiver?.amount) {
