@@ -30,7 +30,8 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.8.0",
     "tailwindcss": "^4.1.11",
-    "tweetnacl": "^1.0.3"
+    "tweetnacl": "^1.0.3",
+    "vercel": "^44.7.3"
   },
   "//IMP END": "IMP END - Web3Auth Installation",
   "devDependencies": {
