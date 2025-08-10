@@ -8,6 +8,7 @@ import {
     serverTimestamp,
     setDoc,
   } from "firebase/firestore";
+  import { getDocs, where, query, orderBy } from "firebase/firestore";
   import { db } from "./firebase";
   import { buildSolanaPayURL } from "./solanapay";
   import { Keypair } from "@solana/web3.js";
@@ -42,10 +43,16 @@ import {
       reference: Keypair.generate().publicKey.toBase58(),
       paid: false,
     }));
-  
+
+    // NEW: flat array for querying by wallet later
+    const participantWallets = participantsWithRefs
+      .map((p) => p.wallet?.trim())
+      .filter(Boolean) as string[];
+
     const pactRef = await addDoc(collection(db, "pacts"), {
       ...pact,
       participants: participantsWithRefs,
+      participantWallets,
       createdAt: serverTimestamp(),
     });
   
@@ -125,4 +132,30 @@ import {
       };
     });
   }
+  export async function listPactsByCreator(creatorWallet: string) {
+    const col = collection(db, "pacts");
+    const q = query(col, where("createdBy", "==", creatorWallet), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
+  }
   
+  // Build a deep link page for a single participant
+  export function buildParticipantPageLink(pactId: string, index: number) {
+    return `/pay/${pactId}/${index}`;
+  }
+
+  export async function listPactsForWallet(wallet: string) {
+    const col = collection(db, "pacts");
+    const q = query(
+      col,
+      where("participantWallets", "array-contains", wallet),
+      orderBy("createdAt", "desc")
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as any));
+  }
+
+  // Utility to find this wallet's participant index inside a pact
+  export function findParticipantIndexByWallet(pact: any, wallet: string): number {
+    return (pact.participants || []).findIndex((p: any) => (p.wallet || "").trim() === wallet.trim());
+  }

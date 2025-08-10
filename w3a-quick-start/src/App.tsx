@@ -9,6 +9,8 @@ import CreatePact from "./pages/CreatePact";
 import NotFound from "./pages/NotFound";
 import PactDetails from "./pages/PactDetails";
 import OrganizerDashboard from "./pages/OrganizerDashboard";
+import ParticipantPay from "./pages/ParticipantPay";
+import MyPacts from "./pages/MyPacts";
 const App: React.FC = () => {
   return (
     <Router>
@@ -20,6 +22,8 @@ const App: React.FC = () => {
   <Route path="/pact/:id" element={<PactDetails />} />
   <Route path="/organizer" element={<OrganizerDashboard />} />
   <Route path="*" element={<NotFound />} />
+  <Route path="/pay/:pactId/:index" element={<ParticipantPay />} />  {/* NEW */}
+  <Route path="/my" element={<MyPacts />} />  {/* NEW */}
 </Routes>
 
     </Router>

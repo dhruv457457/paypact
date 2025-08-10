@@ -111,6 +111,15 @@ export default function PactDetails() {
                       >
                         Copy URL
                       </button>
+                      <button
+                        className="text-xs px-2 py-1 border rounded"
+                        onClick={() => {
+                          const shareLink = `/pay/${pact.id}/${p.i}`;
+                          navigator.clipboard.writeText(window.location.origin + shareLink);
+                        }}
+                      >
+                        Copy participant page
+                      </button>
                       {/* Temporary manual control; replace with webhook later */}
                       <button
                         className="text-xs px-2 py-1 border rounded"
