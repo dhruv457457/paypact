@@ -1,4 +1,4 @@
-import { connection } from "../config/solana";
+import { createConnection } from "../config/solana";
 import { PublicKey } from "@solana/web3.js";
 
 /**
@@ -14,6 +14,7 @@ export async function waitForReferenceTx(
 
   while (Date.now() - start < timeoutMs) {
     try {
+      const connection = await createConnection();
       const sigs = await connection.getSignaturesForAddress(ref, { limit: 1 });
       if (sigs.length > 0) return sigs[0].signature;
     } catch (_) {}

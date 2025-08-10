@@ -14,8 +14,8 @@ export default function ParticipantPay() {
   const { pactId, index } = useParams();
   const idx = Number(index);
 
-  // ✅ use provider (signer), not connection
-  const { accounts, provider } = useSolanaWallet();
+  // ✅ use connection from useSolanaWallet
+  const { accounts, connection } = useSolanaWallet();
   const connected = !!accounts?.[0];
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
@@ -104,7 +104,7 @@ export default function ParticipantPay() {
                 e.stopPropagation(); // ✅ don’t let the <a href="solana:"> fire
                 try {
                   const conn = await createConnection(); // your RPC helper
-                  const signer = (window as any).solana || provider; // Phantom OR Web3Auth embedded
+                  const signer = (window as any).solana || connection; // Phantom OR Web3Auth embedded
                   if (!signer) throw new Error("No Solana wallet connected");
                   const sig = await payWithConnectedWalletSDK({
                     conn,
