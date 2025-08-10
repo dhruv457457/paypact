@@ -12,7 +12,18 @@ function initAdmin() {
 }
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+  if (req.method === 'GET') return res.status(200).send('ok'); // health
+
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).send('Method Not Allowed');
+  }
+
+  // 🔐 Verify the Authentication Header (set this in Vercel env)
+  const SECRET = process.env.HELIUS_WEBHOOK_SECRET;
+  if (SECRET && req.headers.authorization !== SECRET) {
+    return res.status(403).send('Forbidden');
+  }
 
   try {
     initAdmin();
@@ -24,6 +35,7 @@ export default async function handler(req: any, res: any) {
       const accountKeys: string[] = ev?.transaction?.message?.accountKeys ?? [];
       const nativeTransfers: any[] = ev?.nativeTransfers ?? [];
 
+      // Lookup reference -> pact/participant
       let found: { pactId: string; index: number; reference: string } | null = null;
       for (const key of accountKeys) {
         const refSnap = await db.collection('pay_refs').doc(key).get();
@@ -43,6 +55,7 @@ export default async function handler(req: any, res: any) {
       const expectedReceiver: string = pact.receiverWallet;
       const expectedAmount: number = Number(pact.amountPerPerson);
 
+      // Validate native SOL transfer to receiver
       let paidOk = false;
       const toReceiver = nativeTransfers.find((t: any) => String(t?.toUserAccount) === expectedReceiver);
       if (toReceiver?.amount) {
