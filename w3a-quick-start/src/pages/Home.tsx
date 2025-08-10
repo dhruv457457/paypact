@@ -18,7 +18,7 @@ export default function Home() {
     error: disconnectError,
   } = useWeb3AuthDisconnect();
 
-  const { accounts, connection, error: solanaError } = useSolanaWallet();
+  const { accounts, connection } = useSolanaWallet();
   const {
     signAndSendTransaction,
     loading: txLoading,
@@ -180,7 +180,7 @@ export default function Home() {
             color: "#b00",
           }}
           disabled={disconnectLoading}
-          onClick={disconnect}
+          onClick={() => disconnect({ cleanup: true })}
         >
           {disconnectLoading ? "Disconnecting..." : "Log Out"}
         </button>
@@ -233,11 +233,7 @@ export default function Home() {
           Disconnect Error: {disconnectError.message}
         </div>
       )}
-      {solanaError && (
-        <div style={{ color: "#b00", marginBottom: 4 }}>
-          Solana Error: {solanaError.message}
-        </div>
-      )}
+
 
       {isConnected && addressAvailable && (
         <form

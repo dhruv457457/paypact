@@ -66,7 +66,7 @@ const WalletBar: React.FC = () => {
             border: "none",
           }}
           disabled={disconnectLoading}
-          onClick={disconnect}
+          onClick={() => disconnect({ cleanup: true })}
         >
           {disconnectLoading ? "Disconnecting..." : "Log Out"}
         </button>

@@ -21,6 +21,6 @@ const web3AuthContextConfig: Web3AuthContextConfig = {
   modalConfig: {
     openlogin: { label: "email", showOnModal: true },
   },
-};
+} as any;
 
 export default web3AuthContextConfig;
