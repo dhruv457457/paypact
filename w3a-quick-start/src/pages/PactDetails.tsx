@@ -1,7 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useSolanaWallet } from "@web3auth/modal/react/solana";
+
 import { ensureFirebaseAuth } from "../lib/firebase";
 import { listenPact, markParticipantPaid } from "../lib/pacts";
+import { makePayURL } from "../lib/solanapay";
+import { createConnection } from "../config/solana";
+import { payWithConnectedWalletSDK } from "../lib/pay-desktop";
+
 import PaymentQR from "../components/PaymentQR";
 
 type Participant = {
@@ -24,6 +30,11 @@ type PactDoc = {
 
 export default function PactDetails() {
   const { id } = useParams();
+
+  const { accounts, connection } = useSolanaWallet();
+  const connected = !!accounts?.[0];
+  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
   const [pact, setPact] = useState<PactDoc | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
@@ -42,23 +53,20 @@ export default function PactDetails() {
   }, [id]);
 
   const unpaid = useMemo(
-    () => (pact?.participants || []).map((p, i) => ({ ...p, i })).filter(p => !p.paid),
-    [pact]
-  );
-  const paid = useMemo(
-    () => (pact?.participants || []).map((p, i) => ({ ...p, i })).filter(p => p.paid),
+    () =>
+      (pact?.participants || [])
+        .map((p, i) => ({ ...p, i }))
+        .filter((p) => !p.paid),
     [pact]
   );
 
-  // Build a Solana Pay URL without external helpers (works fine for wallets)
-  const buildSolanaPayUrl = (receiver: string, amount: number, ref: string, label: string, message: string) => {
-    const params = new URLSearchParams();
-    params.set("amount", String(amount));
-    if (ref) params.set("reference", ref);
-    if (label) params.set("label", label);
-    if (message) params.set("message", message);
-    return `solana:${receiver}?${params.toString()}`;
-  };
+  const paid = useMemo(
+    () =>
+      (pact?.participants || [])
+        .map((p, i) => ({ ...p, i }))
+        .filter((p) => p.paid),
+    [pact]
+  );
 
   if (loading) return <div className="p-6">Loading…</div>;
   if (err) return <div className="p-6 text-red-600">{err}</div>;
@@ -79,23 +87,25 @@ export default function PactDetails() {
           <h3 className="font-medium mb-3">Unpaid ({unpaid.length})</h3>
           <div className="space-y-4">
             {unpaid.map((p) => {
-              const label = pact.name;
               const who = p.email || p.wallet || `P${p.i + 1}`;
-              const message = `Payment for ${who}`;
-              const url = buildSolanaPayUrl(
-                pact.receiverWallet,
-                pact.amountPerPerson,
-                p.reference || "",
-                label,
-                message
-              );
+              const url = makePayURL({
+                recipient: pact.receiverWallet,
+                amount: pact.amountPerPerson,
+                reference: p.reference || "",
+                label: pact.name,
+                message: `Payment for ${who}`,
+              }).toString();
 
               return (
                 <div key={p.i} className="border rounded-lg p-3 flex gap-3 items-center">
                   <PaymentQR url={url} />
                   <div className="flex-1 text-sm">
-                    <div className="mb-1"><b>Participant:</b> {who}</div>
-                    <div className="break-all text-gray-600">ref: {p.reference || "-"}</div>
+                    <div className="mb-1">
+                      <b>Participant:</b> {who}
+                    </div>
+                    <div className="break-all text-gray-600">
+                      ref: {p.reference || "-"}
+                    </div>
                     <div className="mt-2 flex flex-wrap gap-2">
                       <a
                         href={url}
@@ -115,12 +125,41 @@ export default function PactDetails() {
                         className="text-xs px-2 py-1 border rounded"
                         onClick={() => {
                           const shareLink = `/pay/${pact.id}/${p.i}`;
-                          navigator.clipboard.writeText(window.location.origin + shareLink);
+                          navigator.clipboard.writeText(
+                            window.location.origin + shareLink
+                          );
                         }}
                       >
                         Copy participant page
                       </button>
-                      {/* Temporary manual control; replace with webhook later */}
+
+                      {/* Desktop: pay with connected wallet */}
+                      {!isMobile && connected && p.reference && (
+                        <button
+                          className="text-xs px-2 py-1 rounded bg-blue-600 text-white"
+                          onClick={async () => {
+                            try {
+                              const conn = await createConnection();
+                              const sig = await payWithConnectedWalletSDK({
+                                conn,
+                                provider: (window as any).solana || connection,
+                                payer: accounts![0],
+                                recipient: pact.receiverWallet,
+                                amount: pact.amountPerPerson,
+                                reference: p.reference!,
+                              });
+                              await markParticipantPaid(pact.id, p.i, sig);
+                              alert("Paid!\n" + sig);
+                            } catch (e: any) {
+                              alert(e.message || "Payment failed");
+                            }
+                          }}
+                        >
+                          Pay with connected wallet
+                        </button>
+                      )}
+
+                      {/* Temporary manual toggle */}
                       <button
                         className="text-xs px-2 py-1 border rounded"
                         onClick={() => markParticipantPaid(pact.id, p.i)}
@@ -132,7 +171,9 @@ export default function PactDetails() {
                 </div>
               );
             })}
-            {unpaid.length === 0 && <div className="text-sm text-green-700">All paid 🎉</div>}
+            {unpaid.length === 0 && (
+              <div className="text-sm text-green-700">All paid 🎉</div>
+            )}
           </div>
         </div>
 
@@ -142,12 +183,15 @@ export default function PactDetails() {
           <div className="space-y-2">
             {paid.map((p) => (
               <div key={p.i} className="border rounded-lg p-3 text-sm">
-                <div><b>Participant:</b> {p.email || p.wallet || `P${p.i + 1}`}</div>
-                {/* When you add webhook verification, store txSig + time and show here */}
+                <div>
+                  <b>Participant:</b> {p.email || p.wallet || `P${p.i + 1}`}
+                </div>
                 <div className="text-gray-600">Status: ✅ Paid</div>
               </div>
             ))}
-            {paid.length === 0 && <div className="text-sm text-gray-600">No payments yet.</div>}
+            {paid.length === 0 && (
+              <div className="text-sm text-gray-600">No payments yet.</div>
+            )}
           </div>
         </div>
       </div>

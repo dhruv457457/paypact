@@ -1,7 +1,17 @@
 import { Connection } from "@solana/web3.js";
 
-export const RPC = import.meta.env.VITE_RPC as string;
+const ENDPOINTS = [
+  "https://rpc.ankr.com/solana_devnet",
+  "https://api.devnet.solana.com",
+];
 
-export const connection = new Connection(RPC, {
-  commitment: "processed",
-});
+export async function createConnection() {
+  for (const url of ENDPOINTS) {
+    try {
+      const c = new Connection(url, "confirmed");
+      await c.getLatestBlockhash(); // quick probe
+      return c;
+    } catch {}
+  }
+  return new Connection(ENDPOINTS[ENDPOINTS.length - 1], "confirmed");
+}
