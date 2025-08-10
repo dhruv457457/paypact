@@ -1,21 +1,16 @@
 import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK } from "@web3auth/base";
 import type { Web3AuthContextConfig } from "@web3auth/modal/react";
 
-// ✅ Your dedicated Helius Devnet RPC endpoint with API key
-const RPC_ENDPOINT =
-  "https://devnet.helius-rpc.com/?api-key=cfaf8792-740e-4149-b248-6f698f7a5c51";
-
-// ✅ Your Web3Auth client ID
-const clientId =
-  "BHmzQGTLPY_gtt_WnkuK3QHJyl3sgKiYDQdFIzT5xsFrRYHUeVM5PeWq0EvYCp8L-d1RFpIzb0ODjz1fG773xW4";
+const RPC = import.meta.env.VITE_RPC as string;
+const CLIENT_ID = import.meta.env.VITE_WEB3AUTH_CLIENT_ID as string;
 
 const web3AuthContextConfig: Web3AuthContextConfig = {
   web3AuthOptions: {
-    clientId,
+    clientId: CLIENT_ID,
     chainConfig: {
       chainNamespace: CHAIN_NAMESPACES.SOLANA,
-      chainId: "0x3", // Solana Devnet
-      rpcTarget: RPC_ENDPOINT, // ✅ Helius RPC
+      chainId: "0x3", // devnet
+      rpcTarget: RPC,
       displayName: "Solana Devnet",
       blockExplorerUrl: "https://explorer.solana.com?cluster=devnet",
       ticker: "SOL",
@@ -24,10 +19,7 @@ const web3AuthContextConfig: Web3AuthContextConfig = {
     web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   },
   modalConfig: {
-    openlogin: {
-      label: "email",
-      showOnModal: true,
-    },
+    openlogin: { label: "email", showOnModal: true },
   },
 };
 

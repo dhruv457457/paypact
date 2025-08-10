@@ -1,8 +1,13 @@
 [toolchain]
 
 [features]
-seeds = false
-skip-lint = false
+default = ["idl-build"]        # important
+idl-build = ["anchor-lang/idl-build"]
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+
 
 [programs.localnet]
 cross_chain_contracts = "EdrFHSKQm93xsie3mkXPJ9k1W4MX3fM2ccWbPkVSV1ag"
@@ -11,7 +16,8 @@ cross_chain_contracts = "EdrFHSKQm93xsie3mkXPJ9k1W4MX3fM2ccWbPkVSV1ag"
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Localnet"
+cluster = "devnet"
+
 wallet = "/home/dhruv/.config/solana/id.json"
 
 [scripts]

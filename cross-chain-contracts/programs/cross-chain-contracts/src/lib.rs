@@ -1,85 +1,227 @@
-// programs/cross-chain-hub/src/lib.rs
-// Cross-Chain DeFi Hub - BALANCED MVP Main Contract
-// Professional structure, hackathon timeline
-
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Transfer};
+use anchor_lang::system_program;
 
-mod instructions;
-mod state;
-mod errors;
-
-use instructions::*;
-use state::*;
-use errors::*;
-
-declare_id!("11111111111111111111111111111112");
+declare_id!("EdrFHSKQm93xsie3mkXPJ9k1W4MX3fM2ccWbPkVSV1ag");
 
 #[program]
-pub mod cross_chain_hub {
+pub mod paypact {
     use super::*;
 
-    /// Initialize the Cross-Chain Hub
-    pub fn initialize_hub(
-        ctx: Context<InitializeHub>,
-        bridge_fee_bps: u16,
-        admin: Pubkey,
+    pub fn initialize_pact(
+        ctx: Context<InitializePact>,
+        target_amount: u64,
+        deadline: i64,
+        vault_bump: u8,
     ) -> Result<()> {
-        instructions::initialize_hub(ctx, bridge_fee_bps, admin)
+        let pact = &mut ctx.accounts.pact;
+        pact.creator = ctx.accounts.creator.key();
+        pact.payout_recipient = ctx.accounts.payout_recipient.key();
+        pact.target_amount = target_amount;
+        pact.deadline = deadline;
+        pact.total_raised = 0;
+        pact.status = PactStatus::Open;
+        pact.vault_bump = vault_bump;
+        Ok(())
     }
 
-    /// Bridge assets to another chain
-    pub fn bridge_assets(
-        ctx: Context<BridgeAssets>,
-        target_chain: u16,
-        amount: u64,
-        recipient: [u8; 32],
-        token_mint: Pubkey,
-    ) -> Result<()> {
-        instructions::bridge_assets(ctx, target_chain, amount, recipient, token_mint)
+    pub fn join_and_contribute(ctx: Context<JoinAndContribute>, amount: u64) -> Result<()> {
+        let pact = &mut ctx.accounts.pact;
+        let clock = Clock::get()?;
+
+        require!(clock.unix_timestamp <= pact.deadline, ErrorCode::PactClosed);
+        require!(pact.status == PactStatus::Open, ErrorCode::PactClosed);
+        require!(amount > 0, ErrorCode::InvalidContribution);
+
+        system_program::transfer(
+            CpiContext::new(
+                ctx.accounts.system_program.to_account_info(),
+                system_program::Transfer {
+                    from: ctx.accounts.contributor.to_account_info(),
+                    to: ctx.accounts.vault.to_account_info(),
+                },
+            ),
+            amount,
+        )?;
+
+        pact.total_raised = pact.total_raised.saturating_add(amount);
+        Ok(())
     }
 
-    /// Complete incoming bridge transfer
-    pub fn complete_bridge(
-        ctx: Context<CompleteBridge>,
-        source_chain: u16,
-        amount: u64,
-        bridge_hash: [u8; 32],
-        token_mint: Pubkey,
-    ) -> Result<()> {
-        instructions::complete_bridge(ctx, source_chain, amount, bridge_hash, token_mint)
+    pub fn withdraw_or_settle(ctx: Context<SettlePact>) -> Result<()> {
+        let clock = Clock::get()?;
+        let pact = &mut ctx.accounts.pact;
+        require!(pact.status == PactStatus::Open, ErrorCode::PactClosed);
+        require!(
+            pact.total_raised >= pact.target_amount || clock.unix_timestamp >= pact.deadline,
+            ErrorCode::PactNotReady
+        );
+        require_keys_eq!(
+            ctx.accounts.payout_recipient.key(),
+            pact.payout_recipient,
+            ErrorCode::InvalidPayoutRecipient
+        );
+
+        let pact_key = pact.key();
+        let vault_seeds = &[b"vault".as_ref(), pact_key.as_ref(), &[pact.vault_bump]];
+        let signer_seeds = &[&vault_seeds[..]];
+
+        system_program::transfer(
+            CpiContext::new_with_signer(
+                ctx.accounts.system_program.to_account_info(),
+                system_program::Transfer {
+                    from: ctx.accounts.vault.to_account_info(),
+                    to: ctx.accounts.payout_recipient.to_account_info(),
+                },
+                signer_seeds,
+            ),
+            ctx.accounts.vault.to_account_info().lamports(),
+        )?;
+
+        pact.status = PactStatus::Settled;
+        Ok(())
     }
 
-    /// Create user portfolio
-    pub fn create_portfolio(
-        ctx: Context<CreatePortfolio>,
-    ) -> Result<()> {
-        instructions::create_portfolio(ctx)
-    }
+    pub fn refund(ctx: Context<Refund>) -> Result<()> {
+        let pact = &mut ctx.accounts.pact;
+        let vault = &ctx.accounts.vault;
+        let clock = Clock::get()?;
 
-    /// Update portfolio balances
-    pub fn update_portfolio(
-        ctx: Context<UpdatePortfolio>,
-        solana_balance: u64,
-        ethereum_balance: u64,
-        polygon_balance: u64,
-    ) -> Result<()> {
-        instructions::update_portfolio(ctx, solana_balance, ethereum_balance, polygon_balance)
-    }
+        require!(pact.status == PactStatus::Open, ErrorCode::PactClosed);
+        require!(
+            clock.unix_timestamp >= pact.deadline && pact.total_raised < pact.target_amount,
+            ErrorCode::PactNotReady
+        );
 
-    /// Emergency pause (Admin only)
-    pub fn set_pause_state(
-        ctx: Context<SetPauseState>,
-        paused: bool,
-    ) -> Result<()> {
-        instructions::set_pause_state(ctx, paused)
-    }
+        let pact_key = pact.key();
+        let vault_seeds = &[b"vault".as_ref(), pact_key.as_ref(), &[pact.vault_bump]];
+        let signer_seeds = &[&vault_seeds[..]];
 
-    /// Collect accumulated fees (Admin only)
-    pub fn collect_fees(
-        ctx: Context<CollectFees>,
-        amount: u64,
-    ) -> Result<()> {
-        instructions::collect_fees(ctx, amount)
+        // Refund all funds to the creator (simplified, no member tracking)
+        system_program::transfer(
+            CpiContext::new_with_signer(
+                ctx.accounts.system_program.to_account_info(),
+                system_program::Transfer {
+                    from: vault.to_account_info(),
+                    to: ctx.accounts.creator.to_account_info(),
+                },
+                signer_seeds,
+            ),
+            vault.to_account_info().lamports(),
+        )?;
+
+        pact.total_raised = 0;
+        pact.status = PactStatus::Refunded;
+        Ok(())
     }
+}
+
+/* ============ Accounts ============ */
+
+#[account]
+pub struct Pact {
+    pub creator: Pubkey,
+    pub payout_recipient: Pubkey,
+    pub target_amount: u64,
+    pub deadline: i64,
+    pub total_raised: u64,
+    pub status: PactStatus,
+    pub vault_bump: u8,
+}
+
+#[account]
+pub struct Vault {} // zero-sized PDA, just holds lamports
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Debug)]
+pub enum PactStatus {
+    Open,
+    Settled,
+    Refunded,
+}
+
+/* ============ Contexts ============ */
+
+#[derive(Accounts)]
+#[instruction(target_amount: u64, deadline: i64, vault_bump: u8)]
+pub struct InitializePact<'info> {
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    /// CHECK: only stored and verified later
+    pub payout_recipient: UncheckedAccount<'info>,
+    #[account(
+        init,
+        payer = creator,
+        space = 8 + 32 + 32 + 8 + 8 + 8 + 1 + 1, // 98 bytes
+    )]
+    pub pact: Account<'info, Pact>,
+    #[account(
+        init,
+        payer = creator,
+        seeds = [b"vault", pact.key().as_ref()],
+        bump,
+        space = 8
+    )]
+    pub vault: Account<'info, Vault>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct JoinAndContribute<'info> {
+    #[account(mut)]
+    pub contributor: Signer<'info>,
+    #[account(mut)]
+    pub pact: Account<'info, Pact>,
+    #[account(
+        mut,
+        seeds = [b"vault", pact.key().as_ref()],
+        bump = pact.vault_bump,
+    )]
+    pub vault: Account<'info, Vault>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct SettlePact<'info> {
+    #[account(mut)]
+    pub pact: Account<'info, Pact>,
+    #[account(
+        mut,
+        seeds = [b"vault", pact.key().as_ref()],
+        bump = pact.vault_bump,
+        close = payout_recipient
+    )]
+    pub vault: Account<'info, Vault>,
+    /// CHECK: must match stored payout_recipient
+    #[account(mut)]
+    pub payout_recipient: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct Refund<'info> {
+    #[account(mut)]
+    pub pact: Account<'info, Pact>,
+    #[account(
+        mut,
+        seeds = [b"vault", pact.key().as_ref()],
+        bump = pact.vault_bump,
+        close = creator
+    )]
+    pub vault: Account<'info, Vault>,
+    #[account(mut)]
+    pub creator: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+/* ============ Errors ============ */
+
+#[error_code]
+pub enum ErrorCode {
+    #[msg("Pact is already closed.")]
+    PactClosed,
+    #[msg("Pact not ready to settle/refund.")]
+    PactNotReady,
+    #[msg("Contribution must be greater than zero.")]
+    InvalidContribution,
+    #[msg("Invalid payout recipient.")]
+    InvalidPayoutRecipient,
 }
