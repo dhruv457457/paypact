@@ -1,15 +1,14 @@
-// src/lib/solanapay.ts
 import { encodeURL, createQR } from "@solana/pay";
 import { PublicKey } from "@solana/web3.js";
 import BigNumber from "bignumber.js";
 
 export function makePayURL({
-  recipient,            // receiver wallet (string)
-  amount,               // number, SOL units
-  reference,            // ref pubkey (string)
+  recipient,
+  amount,
+  reference,
   label,
   message,
-  splToken,             // optional SPL mint (string)
+  splToken,
 }: {
   recipient: string;
   amount: number;
@@ -34,14 +33,10 @@ export function renderQR(containerEl: HTMLElement, url: URL) {
   qr.append(containerEl);
 }
 
-/**
- * Backwards-compatible helper so existing code that calls
- * buildSolanaPayURL({ receiver, ... }) keeps working.
- * Returns a string URL.
- */
+/** Back-compat for old imports that expect a string return */
 export function buildSolanaPayURL(args: {
-  recipient?: string;        // preferred
-  receiver?: string;         // legacy param your code used
+  recipient?: string;
+  receiver?: string; // legacy key
   amount: number;
   reference: string;
   label: string;

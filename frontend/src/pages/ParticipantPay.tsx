@@ -1,11 +1,13 @@
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSolanaWallet } from "@web3auth/modal/react/solana";
+import { useWeb3Auth } from "@web3auth/modal/react";
 
 import { ensureFirebaseAuth } from "../lib/firebase";
 import { getPact, markParticipantPaid } from "../lib/pacts";
 import { makePayURL } from "../lib/solanapay";
-import { createConnection } from "../config/solana"; // keep your path
+import { createConnection } from "../config/solana";
 import { payWithConnectedWalletSDK } from "../lib/pay-desktop";
 
 import PaymentQR from "../components/PaymentQR";
@@ -14,10 +16,11 @@ export default function ParticipantPay() {
   const { pactId, index } = useParams();
   const idx = Number(index);
 
-  // ✅ use connection from useSolanaWallet
-  const { accounts, connection } = useSolanaWallet();
+  const wallet = useSolanaWallet();
+  const { accounts } = wallet;
   const connected = !!accounts?.[0];
   const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+  const { provider, status } = useWeb3Auth();
 
   const [pact, setPact] = useState<any | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -53,8 +56,7 @@ export default function ParticipantPay() {
       reference: participant.reference!,
       label: pact.name || "PayPact",
       message:
-        "Payment for " +
-        (participant.email || participant.wallet || `P${idx + 1}`),
+        "Payment for " + (participant.email || participant.wallet || `P${idx + 1}`),
     }).toString();
   }, [pact, participant, idx]);
 
@@ -81,7 +83,6 @@ export default function ParticipantPay() {
         <PaymentQR url={payUrl} />
 
         <div className="flex flex-wrap gap-2 text-sm">
-          {/* Mobile deeplink */}
           <a className="text-blue-600 underline" href={payUrl} target="_blank" rel="noreferrer">
             Open in wallet
           </a>
@@ -94,21 +95,30 @@ export default function ParticipantPay() {
             Copy link
           </button>
 
-          {/* Desktop fallback: pay with connected wallet (embedded or Phantom) */}
+          {/* Embedded wallet only; no Phantom fallback */}
           {!isMobile && connected && !isPaid && participant.reference && (
             <button
               type="button"
               className="px-2 py-1 rounded bg-blue-600 text-white"
               onClick={async (e) => {
                 e.preventDefault();
-                e.stopPropagation(); // ✅ don’t let the <a href="solana:"> fire
+                e.stopPropagation();
                 try {
-                  const conn = await createConnection(); // your RPC helper
-                  const signer = (window as any).solana || connection; // Phantom OR Web3Auth embedded
-                  if (!signer) throw new Error("No Solana wallet connected");
+                  if (!connected) throw new Error("Connect embedded wallet first");
+                  if (!provider || typeof (provider as any).request !== "function") {
+                    console.log("Web3Auth provider missing. Debug:", { status, provider, wallet });
+                    throw new Error("Embedded wallet not connected");
+                  }
+
+                  const signer = provider; // normalizeSigner handles .request(...)
+                  const conn = await createConnection();
+                  console.log("Using RPC:", import.meta.env.VITE_RPC);
+                         
+                  console.log("provider.rpcTarget:", (provider as any)?.rpcTarget);
+                  
                   const sig = await payWithConnectedWalletSDK({
                     conn,
-                    provider: signer,
+                    signer,
                     payer: accounts![0],
                     recipient: pact.receiverWallet,
                     amount: pact.amountPerPerson,
@@ -127,28 +137,15 @@ export default function ParticipantPay() {
         </div>
 
         {isPaid ? (
-          <div className="text-green-700 text-sm">
-            ✅ Already paid{" "}
-            {participant.paidTx ? (
-              <a
-                className="underline text-blue-600"
-                target="_blank"
-                rel="noreferrer"
-                href={`https://explorer.solana.com/tx/${participant.paidTx}?cluster=devnet`}
-              >
-                view tx
-              </a>
-            ) : null}
-          </div>
+          <div className="text-green-700 text-sm">✅ Already paid</div>
         ) : (
           <div className="text-xs text-gray-600">
-            No camera? Tap “Open in wallet” or copy the link and paste it into
-            your wallet’s browser.
+            No camera? Tap “Open in wallet” or copy the link and paste it into your wallet’s
+            browser.
           </div>
         )}
       </div>
 
-      {/* TEMP: manual mark paid; webhook should do this automatically */}
       {!isPaid && (
         <div className="mt-3">
           <button

@@ -1,8 +1,11 @@
 import { CHAIN_NAMESPACES, WEB3AUTH_NETWORK } from "@web3auth/base";
 import type { Web3AuthContextConfig } from "@web3auth/modal/react";
 
-const RPC = import.meta.env.VITE_RPC as string;
 const CLIENT_ID = import.meta.env.VITE_WEB3AUTH_CLIENT_ID as string;
+
+// Start with a vanilla, reliable RPC until everything connects.
+// Once stable, you can switch to Alchemy again.
+const RPC = "https://api.devnet.solana.com"; // or "https://rpc.ankr.com/solana_devnet"
 
 const web3AuthContextConfig: Web3AuthContextConfig = {
   web3AuthOptions: {
@@ -18,8 +21,17 @@ const web3AuthContextConfig: Web3AuthContextConfig = {
     },
     web3AuthNetwork: WEB3AUTH_NETWORK.SAPPHIRE_DEVNET,
   },
+  // Hide EVM/external to avoid EIP-155 noise
   modalConfig: {
     openlogin: { label: "email", showOnModal: true },
+    metamask: { showOnModal: false },
+    walletconnectv2: { showOnModal: false },
+    coinbase: { showOnModal: false },
+    torusEvm: { showOnModal: false },
+    // optional: hide other solana adapters if you want only embedded
+    phantom: { showOnModal: false },
+    solflare: { showOnModal: false },
+    torusSolana: { showOnModal: false },
   },
 } as any;
 
