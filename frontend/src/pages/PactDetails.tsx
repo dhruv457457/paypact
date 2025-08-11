@@ -29,7 +29,6 @@ export default function PactDetails() {
   const wallet = useSolanaWallet();
   const { accounts } = wallet;
   const connected = !!accounts?.[0];
-  const isMobile = /Mobi|Android/i.test(navigator.userAgent);
   const { provider, status } = useWeb3Auth();
 
   const [pact, setPact] = useState<PactDoc | null>(null);
@@ -62,6 +61,10 @@ export default function PactDetails() {
   if (err) return <div className="p-6 text-red-600">{err}</div>;
   if (!pact) return <div className="p-6 text-red-600">Pact not found.</div>;
 
+  // ✅ Capability-based embedded check (works on mobile too)
+  const hasEmbedded =
+    !!provider && typeof (provider as any).request === "function" && connected;
+
   return (
     <div className="max-w-5xl mx-auto mt-10 p-4">
       <h2 className="text-2xl font-semibold text-blue-700 mb-1">{pact.name}</h2>
@@ -85,7 +88,8 @@ export default function PactDetails() {
                 message: `Payment for ${who}`,
               }).toString();
 
-              const showEmbeddedBtn = !isMobile && connected && p.reference;
+              // 🔁 changed: previously `!isMobile && connected && p.reference`
+              const showEmbeddedBtn = hasEmbedded && !!p.reference;
 
               return (
                 <div key={p.i} className="border rounded-lg p-3 flex gap-3 items-center">
@@ -136,9 +140,7 @@ export default function PactDetails() {
                               const signer = provider;
                               const conn = await createConnection();
                               console.log("Using RPC:", import.meta.env.VITE_RPC);
-                         
                               console.log("provider.rpcTarget:", (provider as any)?.rpcTarget);
-                              
 
                               const sig = await payWithConnectedWalletSDK({
                                 conn,
