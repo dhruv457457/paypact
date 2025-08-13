@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@theme {
+  --colors-primary: #67f740; /* A vibrant green for positive actions */
+  --colors-secondary: #000000; /* A dark, near-black for backgrounds */
+  --colors-primary_low: #1bff74;
+  --colors-primary_high: #30ff36;
+  --colors-accent: #67feee;
+
+  --colors-base-100: #ffffff; /* White for text and elements on dark backgrounds */
+  --colors-base-200: #f0f0f0; /* A light gray for secondary text and borders */
+  --colors-base-300: #cccccc; /* A medium gray for disabled states and dividers */
+
+  --colors-success: #00a878; /* Green for successful operations */
+  --colors-warning: #ffc700; /* Yellow for warnings and alerts */
+  --colors-error: #ff5765; /* A bright red for errors and negative actions */
+
+  --font-family-sans: "Roboto", sans-serif; /* A clean and readable sans-serif font */
+}
