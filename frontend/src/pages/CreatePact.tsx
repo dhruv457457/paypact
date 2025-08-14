@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useSolanaWallet } from "@web3auth/modal/react/solana";
-import { ensureFirebaseAuth } from "../lib/firebase";
-import { createPact } from "../lib/pacts";
+import { useSolanaWallet } from "@web3auth/modal/react/solana"; // real wallet hook
+import { ensureFirebaseAuth } from "../lib/firebase"; // real firebase auth
+import { createPact } from "../lib/pacts"; // real backend pact creation
 import { useNavigate } from "react-router-dom";
 
 export default function CreatePact() {
@@ -15,16 +15,15 @@ export default function CreatePact() {
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Invisible: ensures Firestore calls are allowed (anon auth)
     ensureFirebaseAuth();
   }, []);
 
   const parseParticipants = () => {
-    // Supports: newline, comma, or whitespace separated emails / wallets
     const items = participantsText
       .split(/\n|,|\s/)
       .map((s) => s.trim())
@@ -36,6 +35,7 @@ export default function CreatePact() {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
 
     if (!name || !amount || !receiver || !due) {
       setError("Please fill all required fields.");
@@ -56,18 +56,31 @@ export default function CreatePact() {
 
     setSubmitting(true);
     try {
-      const pactId = await createPact({
+      const pactData = {
         name,
         amountPerPerson: amountNum,
         receiverWallet: receiver,
         dueDate: new Date(due).toISOString(),
         createdBy: accounts?.[0],
         participants,
+      };
+
+      // ✅ Use real createPact, returns real pactId like IirSK6wOEdWIS6s6kvWS
+      const pactId = await createPact(pactData);
+
+      // ✅ Send pact email invite with correct pactId
+      await fetch("http://localhost:3001/send-pact-emails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...pactData, pactId }),
       });
 
+      setSuccess(`Pact created successfully! Participants are being notified.`);
+
+      // ✅ Navigate to the new pact page
       navigate(`/pact/${pactId}`);
     } catch (err: any) {
-      setError(err?.message || "Failed to create pact.");
+      setError(err?.message || "Failed to create pact or send emails.");
     } finally {
       setSubmitting(false);
     }
@@ -79,6 +92,12 @@ export default function CreatePact() {
 
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>
+      )}
+
+      {success && (
+        <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+          {success}
+        </div>
       )}
 
       <form onSubmit={onSubmit} className="space-y-4">
@@ -99,13 +118,11 @@ export default function CreatePact() {
               Amount per Person
             </label>
             <input
-              type="number"
-              step="0.0001"
-              min="0.00001"
+              type="text"
               className="w-full border rounded px-3 py-2"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="e.g., 0.5"
+              placeholder="e.g., 5.0001"
               required
             />
           </div>
@@ -143,7 +160,7 @@ export default function CreatePact() {
             rows={5}
             value={participantsText}
             onChange={(e) => setParticipantsText(e.target.value)}
-            placeholder={'one per line (email or wallet)\nor comma/space separated'}
+            placeholder={"one per line (email or wallet)\nor comma/space separated"}
           />
         </div>
 
