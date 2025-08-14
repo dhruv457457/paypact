@@ -6,12 +6,15 @@ import { db } from "../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 export default function Profile() {
-  const { userInfo } = useWeb3Auth();
+  const web3Auth: any = useWeb3Auth();
+  console.log("Web3Auth Object:", web3Auth);
+  const user = web3Auth.user;
   const { accounts } = useSolanaWallet();
   const [firestoreUser, setFirestoreUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+
     const fetchFirestoreUser = async () => {
       if (accounts && accounts.length > 0) {
         const userRef = doc(db, "users", accounts[0]);
@@ -32,17 +35,17 @@ export default function Profile() {
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow">
       <h2 className="text-2xl font-semibold text-blue-700 mb-6">User Profile</h2>
-      {userInfo && (
+      {user && (
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <img
-              src={userInfo.profileImage}
+              src={user.profileImage}
               alt="Profile"
               className="w-24 h-24 rounded-full"
             />
             <div>
-              <h3 className="text-xl font-bold">{userInfo.name}</h3>
-              <p className="text-gray-600">{userInfo.email}</p>
+              <h3 className="text-xl font-bold">{user.name}</h3>
+              <p className="text-gray-600">{user.email}</p>
             </div>
           </div>
           <div>

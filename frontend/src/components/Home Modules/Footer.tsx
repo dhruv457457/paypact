@@ -15,7 +15,7 @@ import {
   FaChartLine,
 } from "react-icons/fa"
 import { SiPolygon, SiSolana } from "react-icons/si"
-import { Button } from "../UI/Button"
+import { Button } from "../UI/button"
 
 function ImprovedFooter() {
   return (
