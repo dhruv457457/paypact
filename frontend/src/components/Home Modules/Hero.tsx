@@ -16,27 +16,33 @@ const HeroSection = () => {
       />
 
       {/* Content Container */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 border-t border-[#1C1C1E]">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen  border-t border-[#1C1C1E]">
         {/* Customer Avatars Section */}
-        <div className=" flex items-center border-x border-t border-[#1C1C1E] p-2">
+        <div className=" flex items-center gap-2 border-x border-t border-[#1C1C1E] p-2">
           <div className="flex items-center justify-center mb-2">
             <div className="flex -space-x-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-red-500 border-2 border-black flex items-center justify-center text-xs font-bold">
-                P
-              </div>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-black flex items-center justify-center text-xs font-bold">
-                Y
-              </div>
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-teal-500 border-2 border-black flex items-center justify-center text-xs font-bold">
-                C
-              </div>
+              <img
+                className="w-8 h-8 rounded-full"
+                src="https://assets.basehub.com/fa068a12/6sGiFfUGTaMBQFStD16V5/figma-image-500x500.png?height=100&quality=100&width=100"
+                alt=""
+              />
+              <img
+                className="w-8 h-8 rounded-full"
+                src="https://assets.basehub.com/fa068a12/XdbZC6Y1mPpNarRwWXWGs/103cd669723f80c168b5d84ec8bbe0a5.png?height=100&quality=100&width=100"
+                alt=""
+              />
+              <img
+                className="w-8 h-8 rounded-full"
+                src="https://assets.basehub.com/fa068a12/eXjW9QO3AKz15Ru0lRyaL/97a514e9e8c98d647f06c12400f1f0bd-(1).png?height=100&quality=100&width=100"
+                alt=""
+              />
             </div>
           </div>
           <p className="text-gray-400 text-sm">1,254 happy customers</p>
         </div>
 
         {/* Main Heading */}
-        <h1 className="text-5xl font-bold text-center mb-6 max-w-4xl leading-tight">
+        <h1 className="text-5xl font-bold text-center mb-6 w-full leading-tight border-t border-[#1C1C1E] pt-10">
           Secure, Simple, & Smart Payments
           <br />
           <span className="bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
@@ -48,7 +54,7 @@ const HeroSection = () => {
         <p className="text-gray-400 text-md text-center mb-12 max-w-2xl leading-relaxed">
           PayPact makes sending, receiving, and managing money effortless. Enjoy
           instant transactions, contract-backed commitments, and full
-          transparency — all in one trusted platform.
+          transparency - all in one trusted platform.
         </p>
 
         {/* CTA Buttons */}

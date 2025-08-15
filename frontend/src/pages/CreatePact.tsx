@@ -87,93 +87,115 @@ export default function CreatePact() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-xl shadow">
-      <h2 className="text-2xl font-semibold text-blue-700 mb-6">Create Pact</h2>
+    <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-24">
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{
+          backgroundImage: `
+            linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: "80px 80px",
+        }}
+      />
+      <div className="relative z-10 max-w-2xl mx-auto p-6 bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl shadow-lg">
+        <h2 className="text-3xl font-semibold text-center text-white mb-8">
+          Create a New Pact
+        </h2>
 
-      {error && (
-        <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{error}</div>
-      )}
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 text-red-300 p-3 rounded mb-4">
+            {error}
+          </div>
+        )}
 
-      {success && (
-        <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
-          {success}
-        </div>
-      )}
+        {success && (
+          <div className="bg-green-900/50 border border-green-500 text-green-300 p-3 rounded mb-4">
+            {success}
+          </div>
+        )}
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Pact Name</label>
-          <input
-            className="w-full border rounded px-3 py-2"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="August Rent"
-            required
-          />
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={onSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Amount per Person
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Pact Name
             </label>
             <input
-              type="text"
-              className="w-full border rounded px-3 py-2"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="e.g., 5.0001"
+              className="w-full bg-[#1C1C1E] border border-[#3A3A3C] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7f48de]"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g., August Rent"
               required
             />
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Amount per Person
+              </label>
+              <input
+                type="text"
+                className="w-full bg-[#1C1C1E] border border-[#3A3A3C] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7f48de]"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="e.g., 5.0001"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Receiver Wallet
+              </label>
+              <input
+                className="w-full bg-[#1C1C1E] border border-[#3A3A3C] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7f48de]"
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+                placeholder="Receiver public key"
+                required
+              />
+            </div>
+          </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Receiver Wallet
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Due Date
             </label>
             <input
-              className="w-full border rounded px-3 py-2"
-              value={receiver}
-              onChange={(e) => setReceiver(e.target.value)}
-              placeholder="Receiver public key"
+              type="datetime-local"
+              className="w-full bg-[#1C1C1E] border border-[#3A3A3C] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7f48de]"
+              value={due}
+              onChange={(e) => setDue(e.target.value)}
               required
             />
           </div>
-        </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Due Date</label>
-          <input
-            type="datetime-local"
-            className="w-full border rounded px-3 py-2"
-            value={due}
-            onChange={(e) => setDue(e.target.value)}
-            required
-          />
-        </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-400 mb-2">
+              Participants (emails or wallets)
+            </label>
+            <textarea
+              className="w-full bg-[#1C1C1E] border border-[#3A3A3C] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7f48de]"
+              rows={5}
+              value={participantsText}
+              onChange={(e) => setParticipantsText(e.target.value)}
+              placeholder="one per line (email or wallet)\nor comma/space separated"
+            />
+          </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Participants (emails or wallets)
-          </label>
-          <textarea
-            className="w-full border rounded px-3 py-2"
-            rows={5}
-            value={participantsText}
-            onChange={(e) => setParticipantsText(e.target.value)}
-            placeholder={"one per line (email or wallet)\nor comma/space separated"}
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className={`w-full ${
-            submitting ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700"
-          } text-white font-semibold py-3 rounded`}
-        >
-          {submitting ? "Creating..." : "Create Pact"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={submitting}
+            className={`w-full font-semibold py-3 rounded-md transition-colors ${
+              submitting
+                ? "bg-gray-600 cursor-not-allowed"
+                : "bg-[#7f48de] hover:bg-[#7437DC]"
+            } text-white`}
+          >
+            {submitting ? "Creating..." : "Create Pact"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
