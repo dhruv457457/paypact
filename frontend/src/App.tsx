@@ -11,22 +11,11 @@ import ParticipantPay from "./pages/ParticipantPay";
 import MyPacts from "./pages/MyPacts";
 import LandingPage from "./pages/LandingPage";
 import { NavbarDemo } from "./components/Home Modules/NavbarDemo";
-import { cn } from "./lib/utils";
+
 
 const App: React.FC = () => {
   return (
     <Router>
-      <div className="relative w-full items-center justify-cente bg-black">
-        <div
-          className={cn(
-            "absolute inset-0",
-            "[background-size:20px_20px]",
-            "[background-image:radial-gradient(rgba(212,212,212,0.2)_1px,transparent_1px)]",
-            "dark:[background-image:radial-gradient(rgba(64,64,64,0.6)_1px,transparent_1px)]"
-          )}
-        />
-
-        <div className="relative z-10">
           <NavbarDemo />
           <Routes>
             <Route path="/" element={<Home />} />
@@ -38,8 +27,7 @@ const App: React.FC = () => {
             <Route path="/my" element={<MyPacts />} />
             <Route path="/home" element={<LandingPage />} />
           </Routes>
-        </div>
-      </div>
+     
     </Router>
   );
 };

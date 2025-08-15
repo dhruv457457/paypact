@@ -50,11 +50,7 @@ export function NavbarDemo() {
 
   const WalletConnectButton = () => (
     <div className="flex items-center gap-4">
-      {addressAvailable && (
-        <span className="font-mono text-sm text-gray-700 hidden sm:block bg-gray-100 px-3 py-1 rounded-md">
-          {accounts[0].slice(0, 6)}...{accounts[0].slice(-4)}
-        </span>
-      )}
+     
       {!isConnected ? (
         <NavbarButton
           variant="primary"

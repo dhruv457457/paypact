@@ -1,242 +1,128 @@
-"use client"
+import React from "react";
 
-import type React from "react"
-import { motion } from "framer-motion"
-import {
-  FaTwitter,
-  FaDiscord,
-  FaTelegram,
-  FaGithub,
-  FaEthereum,
-  FaBitcoin,
-  FaShieldAlt,
-  FaBolt,
-  FaUsers,
-  FaChartLine,
-} from "react-icons/fa"
-import { SiPolygon, SiSolana } from "react-icons/si"
-import { Button } from "../UI/button"
+// Example SVG icons (replace with your own or an icon set if needed)
+const icons = [
+  // Github
+  <svg key="github" width="23" height="23" fill="none" viewBox="0 0 24 24">
+    <path
+      fill="#fff"
+      fillOpacity="0.7"
+      d="M12 2C6.477 2 2 6.486 2 12.017c0 4.427 2.87 8.182 6.839 9.506.5.092.682-.217.682-.483 0-.238-.008-.868-.013-1.703-2.782.605-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.07-.608.07-.608 1.004.072 1.533 1.032 1.533 1.032.892 1.528 2.341 1.087 2.91.832.092-.646.35-1.087.637-1.338-2.221-.253-4.555-1.112-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.254-.447-1.272.098-2.65 0 0 .84-.27 2.75 1.026a9.564 9.564 0 012.5-.337c.85.004 1.705.115 2.504.337 1.908-1.296 2.747-1.026 2.747-1.026.547 1.378.202 2.396.099 2.65.64.7 1.028 1.595 1.028 2.688 0 3.847-2.337 4.695-4.566 4.943.358.309.678.919.678 1.852 0 1.337-.012 2.419-.012 2.747 0 .269.179.579.687.482A10.019 10.019 0 0022 12.017C22 6.486 17.523 2 12 2z"
+    />
+  </svg>, // X(Twitter)
+  <svg key="x" width="23" height="23" fill="none" viewBox="0 0 24 24">
+    <path
+      fill="#fff"
+      fillOpacity="0.7"
+      d="M19.392 21H23l-7.174-7.654L22.705 3h-3.377l-5.354 7.98L8.038 3H1l7.434 7.928L1.294 21H4.82l5.673-8.488z"
+    />
+  </svg>, // Discord
+  <svg key="discord" width="23" height="23" fill="none" viewBox="0 0 24 24">
+    <path
+      fill="#fff"
+      fillOpacity="0.7"
+      d="M20 4.5A2.5 2.5 0 0 0 17.5 2h-11A2.5 2.5 0 0 0 4 4.5v15A2.5 2.5 0 0 0 6.5 22h11a2.5 2.5 0 0 0 2.5-2.5v-15zm-8 2.75a2.75 2.75 0 1 1 0 5.5 2.75 2.75 0 0 1 0-5.5zm-5 2.75a2.75 2.75 0 1 0 5.5 0 2.75 2.75 0 0 0-5.5 0zm10 0a2.75 2.75 0 1 0-5.5 0 2.75 2.75 0 0 0 5.5 0z"
+    />
+  </svg>, // Linkedin
+  <svg key="linkedin" width="23" height="23" fill="none" viewBox="0 0 24 24">
+    <path
+      fill="#fff"
+      fillOpacity="0.7"
+      d="M19 3A2 2 0 0 1 21 5v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14zm-7 8h2v7h-2v-7zm1-2a1 1 0 1 1 0-2 1 1 0 0 1 0 2zM7 11h2v7H7v-7zm11.164-1.158A4 4 0 0 0 17 9.99v8.01h-2v-7c0-1.104-.896-2-2-2s-2 .896-2 2v7H7V9.989c0-.869.136-1.769.821-2.647C8.34 5.084 10.978 2.999 13.999 3a5 5 0 0 1 4.165 6.842z"
+    />
+  </svg>,
+];
 
-function ImprovedFooter() {
+export default function Footer() {
   return (
-    <footer className="relative py-20 px-6 border-t border-gray-800 overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl" />
+    <footer className="bg-black text-white/80 pt-0 pb-4">
+      {/* Newsletter Section */}{" "}
+      <div className="bg-neutral-900 w-full py-8 px-4 md:px-40 flex flex-col md:flex-row md:justify-between items-center gap-4">
+        {" "}
+        <div>
+          {" "}
+          <h2 className="text-xl font-semibold mb-1 text-white">
+            Stay Updated with PayPact
+          </h2>{" "}
+          <p className="text-base text-white/60 mb-1">
+            Join our newsletter for product updates and the latest on Solana
+            Pay.
+          </p>{" "}
+        </div>{" "}
+        <form className="flex items-center gap-2 w-full md:w-auto">
+          {" "}
+          <input
+            type="email"
+            placeholder="you@email.com"
+            className="rounded-full bg-neutral-800 text-white/80 px-5 py-2 outline-none border border-white/10 w-[180px] md:w-[230px]"
+          />{" "}
+          <button
+            type="submit"
+            className="rounded-full bg-white text-gray-900 px-6 py-2 font-semibold shadow border border-white/20 transition"
+          >
+            Submit{" "}
+          </button>{" "}
+        </form>{" "}
       </div>
-
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          {/* Brand Column */}
-          <motion.div
-            className="lg:col-span-1"
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <div className="flex items-center gap-3 mb-8">
-              <div className="text-3xl font-bold text-white">PayPact</div>
-            </div>
-            <p className="text-gray-300 mb-6">
-              The future of Web3 payments. Secure, fast, and built for the decentralized economy.
-            </p>
-            {/* Web3 Badges */}
-            <div className="flex flex-wrap gap-2">
-              <Web3Badge icon={<FaEthereum />} text="Ethereum" />
-              <Web3Badge icon={<FaBitcoin />} text="Bitcoin" />
-              <Web3Badge icon={<SiPolygon />} text="Polygon" />
-              <Web3Badge icon={<SiSolana />} text="Solana" />
-            </div>
-          </motion.div>
-
-          {/* Features Column */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            viewport={{ once: true }}
-          >
-            <h3 className="text-xl font-bold mb-6 text-white">Key Features</h3>
-            <div className="space-y-4">
-              <FeatureItem icon={<FaBolt />} text="Instant Transfers" />
-              <FeatureItem icon={<FaShieldAlt />} text="Bank-Grade Security" />
-              <FeatureItem icon={<FaUsers />} text="Trust Scores" />
-              <FeatureItem icon={<FaChartLine />} text="Business Analytics" />
-            </div>
-          </motion.div>
-
-          {/* Product Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            viewport={{ once: true }}
-          >
-            <h4 className="text-lg font-semibold mb-6 text-white">Product</h4>
-            <div className="space-y-4">
-              <FooterLink text="Personal Wallet" />
-              <FooterLink text="Business Solutions" />
-              <FooterLink text="API Documentation" />
-              <FooterLink text="Pricing" />
-              <FooterLink text="Security" />
-            </div>
-          </motion.div>
-
-          {/* Company Links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            viewport={{ once: true }}
-          >
-            <h4 className="text-lg font-semibold mb-6 text-white">Company</h4>
-            <div className="space-y-4">
-              <FooterLink text="About Us" />
-              <FooterLink text="Careers" />
-              <FooterLink text="Blog" />
-              <FooterLink text="Press Kit" />
-              <FooterLink text="Contact" />
-            </div>
-          </motion.div>
+      {/* Footer Main Area */}{" "}
+      <div className="max-w-7xl mx-auto py-8 px-4 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        {/* Logo and copyright */}{" "}
+        <div className="flex flex-col gap-2 md:w-[280px]">
+          {" "}
+          <div className="flex items-center gap-2">
+            {/* PayPact Logo SVG */}{" "}
+          
+            <span className="font-bold text-white text-xl">PayPact</span>{" "}
+          </div>{" "}
+          <div className="mt-2 mb-2 text-xs text-white/50">
+            @ 2025 PayPact. All rights reserved.
+          </div>{" "}
         </div>
-
-        {/* Bottom Section */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 pt-12 border-t border-gray-800"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          {/* Social Media */}
-          <motion.div>
-            <h4 className="text-lg font-semibold mb-6 text-white">Join Our Community</h4>
-            <div className="flex gap-4 mb-4">
-              <SocialButton icon={<FaTwitter />} label="Twitter" />
-              <SocialButton icon={<FaDiscord />} label="Discord" />
-              <SocialButton icon={<FaTelegram />} label="Telegram" />
-              <SocialButton icon={<FaGithub />} label="GitHub" />
-            </div>
-            <p className="text-sm text-gray-400">
-              Stay updated with the latest Web3 payment innovations and community discussions.
-            </p>
-          </motion.div>
-
-          {/* Legal Links */}
-          <motion.div>
-            <h4 className="text-lg font-semibold mb-6 text-white">Legal</h4>
-            <div className="space-y-4">
-              <FooterLink text="Privacy Policy" />
-              <FooterLink text="Terms of Service" />
-              <FooterLink text="Cookie Policy" />
-              <FooterLink text="Compliance" />
-            </div>
-          </motion.div>
-
-          {/* App Download */}
-          <motion.div>
-            <div className="flex items-start gap-4">
-              <motion.div
-                className="w-16 h-16 rounded-xl flex items-center justify-center border border-gray-700 bg-gray-900/50 backdrop-blur-sm shadow-[0_0_20px_rgba(147,51,234,0.2)]"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.3 }}
+        {/* Docs/Links */}{" "}
+        <div className="flex gap-8 items-center mt-3 md:mt-0">
+          {" "}
+          <a href="#" className="hover:text-white transition">
+            Docs
+          </a>{" "}
+          <a href="#" className="hover:text-white transition">
+            Help
+          </a>{" "}
+          <a href="#" className="hover:text-white transition">
+            Privacy Policy
+          </a>{" "}
+          <a href="#" className="hover:text-white transition">
+            Terms
+          </a>{" "}
+        </div>
+        {/* Appearance and Social icons */}{" "}
+        <div className="flex flex-col items-end gap-2 md:w-[220px]">
+          {/* Appearance toggle (not functional here) */}{" "}
+          <div className="flex items-center gap-1 text-white/70">
+            Appearance{" "}
+            <span className="ml-2 flex items-center gap-1 px-2 py-1 bg-neutral-900 rounded-full border border-white/10">
+              <span className="text-lg">🌞</span>{" "}
+              <span className="w-8 h-6 flex items-center justify-center">
+                {" "}
+                <span className="inline-block w-4 h-4 bg-neutral-800 rounded-full" />{" "}
+              </span>
+              <span className="text-lg">🌜</span>{" "}
+            </span>{" "}
+          </div>
+          {/* Social icons */}{" "}
+          <div className="flex gap-3 mt-2">
+            {" "}
+            {icons.map((icon, idx) => (
+              <a
+                href="#"
+                key={idx}
+                className="p-1 hover:bg-white/10 rounded transition"
               >
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg grid grid-cols-6 gap-px p-1">
-                  {Array.from({ length: 36 }).map((_, i) => (
-                    <motion.div
-                      key={i}
-                      className="rounded-sm bg-white/80"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: Math.random() > 0.5 ? 1 : 0.3 }}
-                      transition={{ delay: i * 0.02, duration: 0.5 }}
-                    />
-                  ))}
-                </div>
-              </motion.div>
-              <div>
-                <h4 className="text-lg font-semibold mb-3 leading-tight text-white">
-                  Your Web3 Wallet
-                  <br />
-                  Everywhere You Go
-                </h4>
-                <Button variant="link" className="p-0 h-auto text-purple-400 hover:text-purple-300 font-medium">
-                  Download the App →
-                </Button>
-              </div>
-            </div>
-          </motion.div>
-        </motion.div>
-
-        {/* Copyright */}
-        <motion.div
-          className="mt-12 pt-8 border-t border-gray-800 text-center"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          viewport={{ once: true }}
-        >
-          <p className="text-gray-400 text-sm">
-            © 2024 PayPact. All rights reserved. Built for the decentralized future.
-          </p>
-        </motion.div>
-      </div>
+                {icon}{" "}
+              </a>
+            ))}{" "}
+          </div>{" "}
+        </div>{" "}
+      </div>{" "}
     </footer>
-  )
+  );
 }
-
-function Web3Badge({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <motion.div
-      className="flex items-center gap-1 px-2 py-1 rounded-full bg-purple-600/10 border border-purple-600/20 text-xs text-purple-400 shadow-[0_0_10px_rgba(147,51,234,0.2)]"
-      whileHover={{ scale: 1.05 }}
-      transition={{ duration: 0.2 }}
-    >
-      <span className="text-xs">{icon}</span>
-      <span>{text}</span>
-    </motion.div>
-  )
-}
-
-function FeatureItem({ icon, text }: { icon: React.ReactNode; text: string }) {
-  return (
-    <motion.div
-      className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors duration-300 cursor-pointer"
-      whileHover={{ x: 5 }}
-      transition={{ duration: 0.2 }}
-    >
-      <span className="text-purple-400">{icon}</span>
-      <span className="text-sm">{text}</span>
-    </motion.div>
-  )
-}
-
-function SocialButton({ icon, label }: { icon: React.ReactNode; label: string }) {
-  return (
-    <motion.button
-      className="w-12 h-12 rounded-xl border border-gray-700 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center text-gray-300 hover:text-purple-400 hover:border-purple-600/30 transition-all duration-300 shadow-[0_0_15px_rgba(147,51,234,0.2)] hover:shadow-[0_0_25px_rgba(147,51,234,0.4)]"
-      whileHover={{ scale: 1.1, y: -2 }}
-      whileTap={{ scale: 0.95 }}
-      aria-label={label}
-    >
-      {icon}
-    </motion.button>
-  )
-}
-
-function FooterLink({ text }: { text: string }) {
-  return (
-    <motion.button
-      className="text-sm text-gray-300 hover:text-white transition-all duration-300 block text-left"
-      whileHover={{ x: 5 }}
-      transition={{ duration: 0.2 }}
-    >
-      {text}
-    </motion.button>
-  )
-}
-
-export default ImprovedFooter
