@@ -11,6 +11,7 @@ import ParticipantPay from "./pages/ParticipantPay";
 import MyPacts from "./pages/MyPacts";
 import LandingPage from "./pages/LandingPage";
 import { NavbarDemo } from "./components/Home Modules/NavbarDemo";
+import Profile from "./pages/Profile";
 
 
 const App: React.FC = () => {
@@ -26,6 +27,7 @@ const App: React.FC = () => {
             <Route path="/pay/:pactId/:index" element={<ParticipantPay />} />
             <Route path="/my" element={<MyPacts />} />
             <Route path="/home" element={<LandingPage />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
      
     </Router>

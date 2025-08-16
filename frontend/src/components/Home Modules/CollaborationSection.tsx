@@ -98,7 +98,7 @@ export default function CollaborationSection() {
         {" "}
         {/* TODO: Replace this placeholder with an image showing the PayPact dashboard or NFT tickets */}{" "}
         <img
-          src="https://sdmntprwestus2.oaiusercontent.com/files/00000000-94b8-61f8-992d-cbc9d4d83404/raw?se=2025-08-15T20%3A04%3A52Z&sp=r&sv=2024-08-04&sr=b&scid=b9e8ac9c-ded3-5c54-aca6-488f20fcb31d&skoid=c953efd6-2ae8-41b4-a6d6-34b1475ac07c&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2025-08-15T10%3A53%3A51Z&ske=2025-08-16T10%3A53%3A51Z&sks=b&skv=2024-08-04&sig=MBYsM6p0mq1n%2Bk%2ByQkygIZzoFXnQkbYiTegmXAJm1k8%3D"
+          src="https://i.ibb.co/kgTCHyG9/Chat-GPT-Image-Aug-16-2025-01-47-47-PM.png"
           className="rounded-full shadow-lg object-cover "
           alt="PayPact Dashboard Preview"
         />{" "}

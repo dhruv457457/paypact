@@ -13,6 +13,7 @@ import {
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
+  useWeb3Auth,
   useWeb3AuthConnect,
   useWeb3AuthDisconnect,
 } from "@web3auth/modal/react";
@@ -21,56 +22,52 @@ import { useSolanaWallet } from "@web3auth/modal/react/solana";
 export function NavbarDemo() {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
-
-  const { connect, isConnected, loading: connectLoading } = useWeb3AuthConnect();
+  
+  const { status } = useWeb3Auth();
+  const {
+    connect,
+    isConnected,
+    loading: connectLoading,
+  } = useWeb3AuthConnect();
   const { disconnect, loading: disconnectLoading } = useWeb3AuthDisconnect();
   const { accounts } = useSolanaWallet();
   const addressAvailable = accounts && accounts.length > 0;
 
   const navItems = [
-    {
-      name: "Home",
-      link: "/home",
-    },
-    {
-      name: "Create Pact",
-      link: "/create",
-    },
-    {
-      name: "Dashboard",
-      link: "/organizer",
-    },
-    {
-      name: "My Pacts",
-      link: "/my",
-    },
+    { name: "Home", link: "/home" },
+    { name: "Create Pact", link: "/create" },
+    { name: "Dashboard", link: "/organizer" },
+    { name: "My Pacts", link: "/my" },
+    { name: "Profile", link: "/profile" },
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const WalletConnectButton = () => (
-    <div className="flex items-center gap-4">
-     
-      {!isConnected ? (
+  const WalletConnectButton = () => {
+    const isLoading = status === 'connecting' || status === 'not_ready';
+    
+    if (isConnected) {
+        return (
+            <NavbarButton
+              variant="primary"
+              disabled={disconnectLoading}
+              onClick={() => disconnect({ cleanup: true })}
+            >
+              {disconnectLoading ? "Disconnecting..." : "Log Out"}
+            </NavbarButton>
+        );
+    }
+    
+    return (
         <NavbarButton
           variant="primary"
-          disabled={connectLoading}
+          disabled={isLoading || connectLoading}
           onClick={() => connect()}
         >
-          {connectLoading ? "Connecting..." : "Connect Wallet"}
+          {isLoading ? "Initializing..." : (connectLoading ? "Connecting..." : "Connect Wallet")}
         </NavbarButton>
-      ) : (
-        <NavbarButton
-          variant="primary"
-          disabled={disconnectLoading}
-          onClick={() => disconnect({ cleanup: true })}
-        >
-          {disconnectLoading ? "Disconnecting..." : "Log Out"}
-        </NavbarButton>
-      )}
-    </div>
-  );
-
+    );
+  };
 
   return (
     <div className="z-100 w-full fixed">
@@ -78,7 +75,13 @@ export function NavbarDemo() {
         {/* Desktop Navigation */}
         <NavBody>
           <NavbarLogo />
-          <NavItems items={navItems.map(item => ({...item, name: item.name, link: item.link}))} />
+          <NavItems
+            items={navItems.map((item) => ({
+              ...item,
+              name: item.name,
+              link: item.link,
+            }))}
+          />
           <div className="flex items-center gap-4">
             <WalletConnectButton />
           </div>
@@ -113,13 +116,12 @@ export function NavbarDemo() {
               </Link>
             ))}
             <div className="border-t my-2"></div>
-              <div className="px-3 py-2">
-                <WalletConnectButton />
-              </div>
+            <div className="px-3 py-2">
+              <WalletConnectButton />
+            </div>
           </MobileNavMenu>
         </MobileNav>
       </Navbar>
-
     </div>
   );
 }

@@ -3,18 +3,7 @@ import React from "react";
 const HeroSection = () => {
   return (
     <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-14">
-      {/* Grid Background */}
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: "80px 80px",
-        }}
-      />
-
+     
       {/* Content Container */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen  border-t border-[#1C1C1E]">
         {/* Customer Avatars Section */}

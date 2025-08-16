@@ -7,6 +7,7 @@ import {
   listPactsForWallet,
   findParticipantIndexByWallet,
 } from "../lib/pacts";
+import { FaCopy, FaExternalLinkAlt, FaMoneyBillWave } from "react-icons/fa";
 
 type PactDoc = {
   id: string;
@@ -77,63 +78,79 @@ export default function MyPacts() {
   if (loading) return <div className="p-6">Loading…</div>;
   if (err) return <div className="p-6 text-red-600">{err}</div>;
 
-  return (
-    <div className="max-w-4xl mx-auto mt-10 p-4">
-      <h2 className="text-2xl font-semibold text-blue-700 mb-4">My Pacts</h2>
+ return (
+    <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-24">
+      <div className="relative z-10 max-w-4xl mx-auto p-6 space-y-8">
+        <h2 className="text-3xl font-semibold text-white text-center">My Pacts</h2>
 
-      {rows.length === 0 ? (
-        <div className="text-gray-600">No pacts found for this wallet.</div>
-      ) : (
-        <div className="space-y-3">
-          {rows.map(({ pact, idx, me, paidCount, total }) => {
-            const myStatus = me?.paid ? "✅ Paid" : "❌ Unpaid";
-            const myLink = idx >= 0 ? `/pay/${pact.id}/${idx}` : null;
+        {rows.length === 0 ? (
+          <div className="text-center text-gray-500 py-10">
+            <p>You are not a participant in any pacts yet.</p>
+            <p className="mt-2">When someone adds you to a pact, it will appear here.</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {rows.map(({ pact, idx, me, paidCount, total }) => {
+              const myStatus = me?.paid ? "Paid" : "Unpaid";
+              const myLink = idx >= 0 ? `/pay/${pact.id}/${idx}` : null;
+              const progress = total > 0 ? (paidCount / total) * 100 : 0;
 
-            return (
-              <div key={pact.id} className="border rounded-lg p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <div className="font-medium">{pact.name}</div>
-                    <div className="text-sm text-gray-600">
-                      Amount/person: <b>{pact.amountPerPerson}</b> •{" "}
-                      Receiver: <span className="font-mono">{pact.receiverWallet}</span> •{" "}
-                      Due: {pact.dueDate ? new Date(pact.dueDate).toLocaleString() : "-"}
+              return (
+                <div key={pact.id} className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl shadow-lg overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-white">{pact.name}</h3>
+                        <p className="text-sm text-gray-400 mt-1">
+                          Amount: <span className="font-semibold text-purple-400">{pact.amountPerPerson} SOL</span>
+                        </p>
+                         <p className="text-xs text-gray-500 font-mono mt-1">
+                           To: {pact.receiverWallet}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                         <div className={`text-sm font-semibold px-3 py-1 rounded-full ${me?.paid ? 'bg-green-900/50 text-green-400' : 'bg-red-900/50 text-red-400'}`}>
+                           Your Status: {myStatus}
+                         </div>
+                         <Link to={`/pact/${pact.id}`} className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition-colors">
+                           View Details <FaExternalLinkAlt/>
+                         </Link>
+                      </div>
                     </div>
-                    <div className="text-sm mt-1">
-                      Group status: {paidCount}/{total} paid
+                    
+                    <div className="mt-4">
+                        <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
+                            <span>Group Progress</span>
+                            <span>{paidCount} / {total} Paid</span>
+                        </div>
+                        <div className="w-full bg-gray-800 rounded-full h-2 border border-gray-700">
+                           <div className="bg-gradient-to-r from-purple-600 to-blue-600 h-full rounded-full" style={{ width: `${progress}%` }}/>
+                        </div>
                     </div>
-                    <div className="text-sm">Your status: {myStatus}</div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Link className="text-blue-600 underline" to={`/pact/${pact.id}`}>
-                      View pact
-                    </Link>
-                    {myLink && (
-                      <Link className="text-blue-600 underline" to={myLink}>
-                        Pay now
-                      </Link>
-                    )}
-                  </div>
+                  {myLink && !me?.paid && (
+                    <div className="bg-black/30 px-6 py-3 flex flex-col md:flex-row items-center justify-between gap-3">
+                       <p className="text-sm text-gray-300">It's your turn to pay.</p>
+                       <div className="flex items-center gap-3">
+                          <button
+                            className="flex items-center gap-2 text-xs px-3 py-2 border border-[#3A3A3C] rounded-md hover:bg-[#1C1C1E] transition-colors"
+                            onClick={() => handleCopyLink(myLink)}
+                          >
+                            <FaCopy /> {copiedLink === myLink ? 'Copied!' : 'Copy Payment Link'}
+                          </button>
+                           <Link to={myLink} className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-[#7f48de] hover:bg-[#7437DC] transition-colors font-semibold">
+                              <FaMoneyBillWave/> Pay Now
+                           </Link>
+                       </div>
+                    </div>
+                  )}
                 </div>
-
-                {myLink && !me?.paid && (
-                  <div className="mt-2">
-                    <button
-                      className="text-xs px-2 py-1 border rounded"
-                      onClick={() =>
-                        navigator.clipboard.writeText(window.location.origin + myLink)
-                      }
-                    >
-                      Copy my payment link
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
