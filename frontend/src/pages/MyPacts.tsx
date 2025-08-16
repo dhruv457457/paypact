@@ -29,6 +29,20 @@ export default function MyPacts() {
   const [loading, setLoading] = useState(true);
   const [pacts, setPacts] = useState<PactDoc[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+  
+  const handleCopyLink = async (link: string) => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}${link}`);
+      setCopiedLink(link);
+
+      // Reset after 2 sec to show "Copied!"
+      setTimeout(() => setCopiedLink(null), 2000);
+    } catch (e) {
+      console.error("Copy failed", e);
+    }
+  };
 
   // 1) Wait for Firebase auth (anon in dev) BEFORE any Firestore reads
   useEffect(() => {
