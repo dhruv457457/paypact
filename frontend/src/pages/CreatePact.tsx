@@ -14,8 +14,8 @@ export default function CreatePact() {
   const [participantsText, setParticipantsText] = useState("");
 
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
   const navigate = useNavigate();
 
@@ -32,7 +32,7 @@ export default function CreatePact() {
     return items.map((v) => (v.includes("@") ? { email: v } : { wallet: v }));
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
@@ -79,7 +79,7 @@ export default function CreatePact() {
 
       // ✅ Navigate to the new pact page
       navigate(`/pact/${pactId}`);
-    } catch (err: any) {
+    } catch (err) {
       setError(err?.message || "Failed to create pact or send emails.");
     } finally {
       setSubmitting(false);
