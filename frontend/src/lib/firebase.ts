@@ -17,7 +17,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 // Make it idempotent + truly wait for a user
-let readyPromise = null;
+let readyPromise: Promise<void> | null = null;
 
 export function ensureFirebaseAuth() {
   if (readyPromise) return readyPromise;
@@ -26,7 +26,7 @@ export function ensureFirebaseAuth() {
     const stop = onAuthStateChanged(auth, async (user) => {
       if (user) {
         stop();
-        resolve();
+        resolve(undefined);
         return;
       }
       try {
@@ -50,7 +50,9 @@ export function ensureFirebaseAuth() {
  * @param user The Firebase User object from onAuthStateChanged.
  * @param wallet The user's Solana wallet address.
  */
-export async function saveUserWalletMapping(user, wallet) {
+import { User } from "firebase/auth";
+
+export async function saveUserWalletMapping(user: User, wallet: string) {
   if (!user || !wallet) {
     console.error("User or wallet is missing, cannot save mapping.");
     return;

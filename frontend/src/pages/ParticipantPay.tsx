@@ -99,6 +99,10 @@ export default function ParticipantPay() {
       const signer = provider;
       const conn = await createConnection();
 
+      if (!participant?.reference) {
+        throw new Error("Participant reference is missing");
+      }
+
       const sig = await payWithConnectedWalletSDK({
         conn,
         signer,
