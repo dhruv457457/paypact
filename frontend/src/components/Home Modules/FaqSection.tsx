@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const faqs = [
   {
@@ -34,30 +34,53 @@ const faqs = [
 ];
 
 export default function FaqSection() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const handleToggle = (index) => {
+    setOpenIndex(openIndex === index ? null : index);
+  };
+
   return (
     <section className="bg-black text-white py-16 px-4">
-      {" "}
       <div className="flex flex-col items-center">
-        {" "}
         <span className="px-5 py-1.5 mb-3 rounded-full bg-white/5 border border-white/10 text-sm text-white/70 font-medium">
-          FAQs{" "}
-        </span>{" "}
+          FAQs
+        </span>
         <h2 className="text-3xl md:text-4xl font-bold mb-2 text-center">
           Frequently Asked Questions
-        </h2>{" "}
+        </h2>
         <p className="text-base text-white/60 mb-8 text-center">
-          Your questions about PayPact, answered.{" "}
-        </p>{" "}
-      </div>{" "}
-      <div className="grid md:grid-cols-3 gap-10 max-w-6xl mx-auto">
-        {" "}
-        {faqs.map((faq) => (
-          <div key={faq.question}>
-            <h3 className="font-semibold mb-2">{faq.question}</h3>
-            <p className="text-white/60">{faq.answer}</p>{" "}
+          Your questions about PayPact, answered.
+        </p>
+      </div>
+
+      <div className="max-w-5xl mx-auto mt-8">
+        {faqs.map((faq, index) => (
+          // This container div now holds the background and border styles
+          <div
+            key={index}
+            className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-lg mb-3"
+          >
+            <button
+              onClick={() => handleToggle(index)}
+              className="w-full p-5 flex justify-between items-center text-left"
+            >
+              <h3 className="font-semibold text-lg">{faq.question}</h3>
+              <span className="text-2xl font-light">
+                {openIndex === index ? "−" : "+"}
+              </span>
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                openIndex === index ? "max-h-96" : "max-h-0"
+              }`}
+            >
+              {/* Added padding to the answer for better alignment */}
+              <p className="text-white/60 px-5 pb-5">{faq.answer}</p>
+            </div>
           </div>
-        ))}{" "}
-      </div>{" "}
+        ))}
+      </div>
     </section>
   );
 }

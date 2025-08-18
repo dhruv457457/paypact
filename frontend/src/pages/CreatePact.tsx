@@ -88,16 +88,7 @@ export default function CreatePact() {
 
   return (
     <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-24">
-      <div
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: "80px 80px",
-        }}
-      />
+    
       <div className="relative z-10 max-w-2xl mx-auto p-6 bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl shadow-lg">
         <h2 className="text-3xl font-semibold text-center text-white mb-8">
           Create a New Pact

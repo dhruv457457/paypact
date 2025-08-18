@@ -11,7 +11,6 @@ function LandingPage() {
       <div className="">
         <Hero />
         <BentoGridSection />
-        <FeaturesCard />
         <CollaborationSection />
         <FaqSection />
         <Footer />
