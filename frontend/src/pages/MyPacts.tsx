@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSolanaWallet } from "@web3auth/modal/react/solana";
+import { useWeb3Auth } from "@web3auth/modal/react"; // Import useWeb3Auth
 import { ensureFirebaseAuth } from "../lib/firebase";
 import {
   listPactsForWallet,
@@ -22,6 +23,7 @@ type PactDoc = {
 };
 
 export default function MyPacts() {
+  const { status } = useWeb3Auth(); // Get wallet status
   const { accounts } = useSolanaWallet();
   const wallet = accounts?.[0] || "";
 
@@ -85,17 +87,32 @@ export default function MyPacts() {
     });
   }, [pacts, wallet]);
 
+  if (status === "not_ready" || status === "connecting") {
+    return (
+      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center">
+        <p className="text-gray-400">Initializing Wallet...</p>
+      </div>
+    );
+  }
+
   if (!wallet) {
-    return <div className="p-6">Please connect your wallet first.</div>;
+    return (
+      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center">
+          <div className="text-center">
+              <h2 className="text-2xl font-semibold text-white mb-2">View Your Pacts</h2>
+              <p className="text-gray-500">Please connect your wallet to see the pacts you're a part of.</p>
+          </div>
+      </div>
+    );
   }
 
   if (loading) return <div className="p-6">Loading…</div>;
   if (err) return <div className="p-6 text-red-600">{err}</div>;
 
  return (
-    <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-24">
-      <div className="relative z-10 max-w-4xl mx-auto p-6 space-y-8">
-        <h2 className="text-3xl font-semibold text-white text-center">My Pacts</h2>
+    <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-14">
+      <div className="relative z-10 lg:px-40 mx-auto p-6 space-y-8 border-t border-[#1C1C1E]">
+        <h2 className="text-3xl font-semibold text-white">My Pacts</h2>
 
         {rows.length === 0 ? (
           <div className="text-center text-gray-500 py-10">

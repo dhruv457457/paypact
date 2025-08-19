@@ -146,8 +146,8 @@ export default function Profile() {
 
   return (
     // ... (rest of the JSX remains the same)
-    <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-24">
-      <div className="relative z-10 max-w-7xl mx-auto p-6 space-y-8">
+    <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-14">
+      <div className="relative z-10 lg:px-40 mx-auto p-6 space-y-8 border-t border-[#1C1C1E]">
         <div>
             <h2 className="text-3xl font-semibold text-white">Dashboard</h2>
             <p className="text-gray-400 mt-1">Welcome back, here is your overview.</p>

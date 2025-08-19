@@ -39,7 +39,7 @@ export default function OrganizerDashboard() {
   // Show initializing message
   if (status === "not_ready" || status === "connecting") {
     return (
-      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center">
+      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center p-4">
         <p className="text-gray-400">Initializing Wallet...</p>
       </div>
     );
@@ -48,15 +48,15 @@ export default function OrganizerDashboard() {
   // Handle error state
   if (err) {
     return (
-      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center">
-        <div className="p-6 text-red-600">{err}</div>
+      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center p-4">
+        <div className="p-6 text-red-600 text-center">{err}</div>
       </div>
     );
   }
   
   return (
     <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-14">
-      <div className="relative z-10 mx-auto py-10 px-40 space-y-8 border-t border-[#1C1C1E]">
+      <div className="relative z-10 mx-auto py-10 px-4 sm:px-6 lg:px-40 space-y-8 border-t border-[#1C1C1E]">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-3xl font-semibold text-white">
@@ -68,7 +68,7 @@ export default function OrganizerDashboard() {
           </div>
           <Link
             to="/create"
-            className="flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-[#7f48de] hover:bg-[#7437DC] transition-colors font-semibold"
+            className="flex items-center justify-center w-full md:w-auto gap-2 text-sm px-4 py-2 rounded-md bg-[#7f48de] hover:bg-[#7437DC] transition-colors font-semibold"
           >
             <FaPlusCircle /> Create New Pact
           </Link>
@@ -79,7 +79,7 @@ export default function OrganizerDashboard() {
             <p>Loading your pacts...</p>
           </div>
         ) : pacts.length === 0 ? (
-          <div className="text-center border-2 border-dashed border-[#1C1C1E] rounded-xl p-12">
+          <div className="text-center border-2 border-dashed border-[#1C1C1E] rounded-xl p-8 sm:p-12">
             <h3 className="text-xl font-semibold text-white">
               You haven't created any pacts yet.
             </h3>
