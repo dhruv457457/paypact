@@ -129,7 +129,7 @@ export default function CreatePact() {
     setSelectedContacts([]);
   };
 
-  const toggleContactSelection = (contact) => {
+  const toggleContactSelection = (contact: { name: string; email: string; publicKey: string }) => {
     setSelectedContacts((prev) =>
       prev.some((c) => c.publicKey === contact.publicKey)
         ? prev.filter((c) => c.publicKey !== contact.publicKey)
