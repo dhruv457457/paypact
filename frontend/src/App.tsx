@@ -12,6 +12,7 @@ import MyPacts from "./pages/MyPacts";
 import LandingPage from "./pages/LandingPage";
 import { NavbarDemo } from "./components/Home Modules/NavbarDemo";
 import Profile from "./pages/Profile";
+import ContactsPage from "./pages/ContactsPage";
 
 
 const App: React.FC = () => {
@@ -28,6 +29,7 @@ const App: React.FC = () => {
             <Route path="/my" element={<MyPacts />} />
             <Route path="/home" element={<LandingPage />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/contacts" element={<ContactsPage />} />
           </Routes>
      
     </Router>

@@ -38,6 +38,7 @@ export function NavbarDemo() {
     { name: "Create Pact", link: "/create" },
     { name: "Dashboard", link: "/organizer" },
     { name: "My Pacts", link: "/my" },
+    { name: "Contacts", link: "/contacts" },
     { name: "Profile", link: "/profile" },
   ];
 
