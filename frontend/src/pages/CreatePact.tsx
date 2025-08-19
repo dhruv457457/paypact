@@ -6,12 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { getContacts } from "../lib/contacts";
 import { FaUserPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 
-type Contact = {
-  name: string;
-  email: string;
-  publicKey: string;
-};
-
 export default function CreatePact() {
   const { accounts } = useSolanaWallet();
   const wallet = accounts?.[0] || "";
@@ -22,6 +16,8 @@ export default function CreatePact() {
   const [receiver, setReceiver] = useState("");
   const [due, setDue] = useState("");
   const [participantsText, setParticipantsText] = useState("");
+  const [splToken, setSplToken] = useState("");
+  const [isSplToken, setIsSplToken] = useState(false);
 
   // State for UI/UX
   const [submitting, setSubmitting] = useState(false);
@@ -29,8 +25,8 @@ export default function CreatePact() {
   const [success, setSuccess] = useState<string | null>(null);
 
   // State for contacts
-  const [savedContacts, setSavedContacts] = useState<Contact[]>([]);
-  const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
+  const [savedContacts, setSavedContacts] = useState<any[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<any[]>([]);
   const [showContactModal, setShowContactModal] = useState(false);
 
   const navigate = useNavigate();
@@ -84,6 +80,12 @@ export default function CreatePact() {
       setError("Add at least one participant (email or wallet).");
       return;
     }
+    
+    // Check if SPL token mint is provided if the checkbox is checked
+    if (isSplToken && !splToken) {
+      setError("Please provide an SPL Token Mint Address.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -94,6 +96,8 @@ export default function CreatePact() {
         dueDate: new Date(due).toISOString(),
         createdBy: accounts?.[0],
         participants,
+        // ✅ The fix: Conditionally add splToken to the object
+        ...(isSplToken && splToken ? { splToken } : {}),
       };
 
       const pactId = await createPact(pactData);
@@ -115,22 +119,17 @@ export default function CreatePact() {
   };
 
   const handleAddFromContacts = () => {
-    // Collect all public keys and emails from selected contacts
     const newParticipants = selectedContacts.map((contact) =>
       contact.email || contact.publicKey
     );
-
-    // Append to existing participants, separated by a newline
     setParticipantsText(
       (prev) => `${prev.trim()}\n${newParticipants.join("\n")}`.trim()
     );
-
-    // Close the modal and reset selections
     setShowContactModal(false);
     setSelectedContacts([]);
   };
 
-  const toggleContactSelection = (contact: Contact) => {
+  const toggleContactSelection = (contact) => {
     setSelectedContacts((prev) =>
       prev.some((c) => c.publicKey === contact.publicKey)
         ? prev.filter((c) => c.publicKey !== contact.publicKey)
@@ -198,6 +197,35 @@ export default function CreatePact() {
               />
             </div>
           </div>
+          
+          {/* New Currency Toggle and SPL Token Field */}
+          <div className="flex items-center gap-2">
+            <label htmlFor="currency-toggle" className="text-gray-400">
+              Use SPL Token instead of SOL?
+            </label>
+            <input
+              id="currency-toggle"
+              type="checkbox"
+              checked={isSplToken}
+              onChange={(e) => setIsSplToken(e.target.checked)}
+              className="form-checkbox text-[#7f48de] h-5 w-5 rounded-md focus:ring-[#7f48de] border-gray-600"
+            />
+          </div>
+
+          {isSplToken && (
+            <div>
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                SPL Token Mint Address
+              </label>
+              <input
+                className="w-full bg-[#1C1C1E] border border-[#3A3A3C] rounded-md px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#7f48de]"
+                value={splToken}
+                onChange={(e) => setSplToken(e.target.value)}
+                placeholder="e.g., EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyLscjW"
+                required
+              />
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">

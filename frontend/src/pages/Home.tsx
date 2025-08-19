@@ -2,6 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useWeb3AuthConnect, useWeb3AuthDisconnect } from "@web3auth/modal/react";
 import { useSolanaWallet, useSignAndSendTransaction } from "@web3auth/modal/react/solana";
 import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { getAssociatedTokenAddress, createTransferCheckedInstruction, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+
+// USDC token address (Devnet)
+const USDC_MINT_ADDRESS = new PublicKey("Gh9ZwEmdLJ8DscKNTkTqPbNwLNNBjuSzaG9Vp2KGtKJr");
+const USDC_DECIMALS = 6;
 
 export default function Home() {
   const {
@@ -26,12 +31,14 @@ export default function Home() {
     data: txSignature,
   } = useSignAndSendTransaction();
 
-  const [balance, setBalance] = useState<number | null>(null);
+  const [solBalance, setSolBalance] = useState<number | null>(null);
+  const [usdcBalance, setUsdcBalance] = useState<number | null>(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
   const [balanceError, setBalanceError] = useState<string | null>(null);
 
   const [toAddress, setToAddress] = useState("");
   const [amount, setAmount] = useState("");
+  const [isSendingUsdc, setIsSendingUsdc] = useState(false);
 
   const addressAvailable = accounts && accounts.length > 0;
 
@@ -52,16 +59,31 @@ export default function Home() {
     if (connection && addressAvailable) {
       try {
         setLoadingBalance(true);
-        const lamports = await connection.getBalance(new PublicKey(accounts[0]));
-        setBalance(lamports / LAMPORTS_PER_SOL);
+        const ownerPublicKey = new PublicKey(accounts[0]);
+
+        // Fetch SOL balance
+        const solLamports = await connection.getBalance(ownerPublicKey);
+        setSolBalance(solLamports / LAMPORTS_PER_SOL);
+
+        // Fetch USDC balance
+        try {
+          const usdcTokenAccount = await getAssociatedTokenAddress(USDC_MINT_ADDRESS, ownerPublicKey);
+          const usdcAccountInfo = await connection.getTokenAccountBalance(usdcTokenAccount);
+          setUsdcBalance(usdcAccountInfo.value.uiAmount);
+        } catch (e) {
+          // This likely means the user has no USDC tokens.
+          setUsdcBalance(0);
+        }
       } catch (err: any) {
         setBalanceError(err?.message || "Balance fetch error");
-        setBalance(null);
+        setSolBalance(null);
+        setUsdcBalance(null);
       } finally {
         setLoadingBalance(false);
       }
     } else {
-      setBalance(null);
+      setSolBalance(null);
+      setUsdcBalance(null);
     }
   };
 
@@ -84,14 +106,38 @@ export default function Home() {
         blockhash,
         lastValidBlockHeight,
         feePayer: fromPubkey,
-      }).add(
-        SystemProgram.transfer({
-          fromPubkey,
-          toPubkey,
-          lamports: Math.round(Number(amount) * LAMPORTS_PER_SOL),
-        })
-      );
+      });
+      
+      if (isSendingUsdc) {
+        const fromTokenAccount = await getAssociatedTokenAddress(USDC_MINT_ADDRESS, fromPubkey);
+        const toTokenAccount = await getAssociatedTokenAddress(USDC_MINT_ADDRESS, toPubkey);
+        
+        const amountUsdc = Number(amount) * Math.pow(10, USDC_DECIMALS);
+        
+        tx.add(
+          createTransferCheckedInstruction(
+            fromTokenAccount,
+            USDC_MINT_ADDRESS,
+            toTokenAccount,
+            fromPubkey,
+            amountUsdc,
+            USDC_DECIMALS,
+            [],
+            TOKEN_PROGRAM_ID
+          )
+        );
 
+      } else {
+        // SOL transfer
+        tx.add(
+          SystemProgram.transfer({
+            fromPubkey,
+            toPubkey,
+            lamports: Math.round(Number(amount) * LAMPORTS_PER_SOL),
+          })
+        );
+      }
+      
       await signAndSendTransaction(tx);
       await fetchBalance();
       setToAddress("");
@@ -198,11 +244,21 @@ export default function Home() {
         </div>
 
         <div>
-          <b>Balance:</b>{" "}
+          <b>SOL Balance:</b>{" "}
           {loadingBalance
             ? "Loading..."
-            : balance !== null
-            ? `${balance.toFixed(4)} SOL`
+            : solBalance !== null
+            ? `${solBalance.toFixed(4)} SOL`
+            : balanceError
+            ? `Err: ${balanceError}`
+            : "--"}
+        </div>
+        <div>
+          <b>USDC Balance:</b>{" "}
+          {loadingBalance
+            ? "Loading..."
+            : usdcBalance !== null
+            ? `${usdcBalance.toFixed(4)} USDC`
             : balanceError
             ? `Err: ${balanceError}`
             : "--"}
@@ -246,7 +302,16 @@ export default function Home() {
             background: "#f8fbff",
           }}
         >
-          <div style={{ fontWeight: 500, marginBottom: 6 }}>Send SOL</div>
+          <div style={{ fontWeight: 500, marginBottom: 6 }}>Send {isSendingUsdc ? "USDC" : "SOL"}</div>
+          <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="checkbox"
+              id="send-usdc"
+              checked={isSendingUsdc}
+              onChange={(e) => setIsSendingUsdc(e.target.checked)}
+            />
+            <label htmlFor="send-usdc">Send USDC Instead</label>
+          </div>
           <input
             type="text"
             style={{
@@ -272,9 +337,9 @@ export default function Home() {
             }}
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            step="0.0001"
-            min="0.00001"
-            placeholder="Amount (SOL)"
+            step={isSendingUsdc ? "0.000001" : "0.0001"}
+            min="0.000001"
+            placeholder={`Amount (${isSendingUsdc ? "USDC" : "SOL"})`}
             required
           />
           <button

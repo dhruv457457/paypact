@@ -23,6 +23,7 @@ type PactDoc = {
   createdBy?: string;
   participants: Participant[];
   createdAt?: any;
+  splToken?: string; // Add splToken to the PactDoc type
 };
 
 // --- Helper Function ---
@@ -53,7 +54,7 @@ const ConfirmationModal = ({ pact, participant, onConfirm, onCancel, isLoading }
     <div className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl shadow-lg p-6 max-w-sm w-full text-center">
       <h3 className="text-xl font-semibold text-white mb-2">Confirm Payment</h3>
       <p className="text-gray-400 mb-6">
-        Pay <strong className="text-purple-400 font-bold">{pact.amountPerPerson} SOL</strong> for{" "}
+        Pay <strong className="text-purple-400 font-bold">{pact.amountPerPerson} {pact.splToken ? 'Token' : 'SOL'}</strong> for{" "}
         <strong className="text-white">{truncateIdentifier(participant.email || participant.wallet || `Participant ${participant.i + 1}`)}</strong>?
       </p>
       <div className="flex justify-center gap-4">
@@ -126,6 +127,7 @@ export default function PactDetails() {
         recipient: pact.receiverWallet,
         amount: pact.amountPerPerson,
         reference: selectedParticipant.reference,
+        splToken: pact.splToken,
       });
 
       await markParticipantPaid(pact.id, selectedParticipant.i, sig);
@@ -168,8 +170,11 @@ export default function PactDetails() {
           <div className="text-center">
             <h2 className="text-3xl font-bold text-white mb-1">{pact.name}</h2>
             <p className="text-sm text-gray-400">
-              Amount: <span className="font-semibold text-purple-400">{pact.amountPerPerson} SOL</span> • Due: {new Date(pact.dueDate).toLocaleString()}
+              Amount: <span className="font-semibold text-purple-400">{pact.amountPerPerson} {pact.splToken ? 'Token' : 'SOL'}</span> • Due: {new Date(pact.dueDate).toLocaleString()}
             </p>
+            {pact.splToken && (
+              <p className="text-xs text-gray-500 font-mono mt-1 truncate px-4">Token: {truncateIdentifier(pact.splToken)}</p>
+            )}
             <p className="text-xs text-gray-500 font-mono mt-1 truncate px-4">To: {pact.receiverWallet}</p>
           </div>
 
@@ -184,6 +189,7 @@ export default function PactDetails() {
                   const who = p.email || p.wallet || `Participant ${p.i + 1}`;
                   const url = makePayURL({
                     recipient: pact.receiverWallet, amount: pact.amountPerPerson, reference: p.reference,
+                    splToken: pact.splToken, // <-- NEW
                     label: pact.name, message: `Payment for ${who}`, cluster: CLUSTER
                   }).toString();
 

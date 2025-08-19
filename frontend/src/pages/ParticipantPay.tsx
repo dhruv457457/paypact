@@ -22,6 +22,7 @@ type PactDoc = {
   createdBy?: string;
   participants: Participant[];
   createdAt?: any;
+  splToken?: string; // Add splToken to the PactDoc type
 };
 
 // Component to handle the payment page for a single participant
@@ -85,6 +86,7 @@ export default function ParticipantPay() {
     recipient: pact.receiverWallet,
     amount: pact.amountPerPerson,
     reference: participant.reference || "",
+    splToken: pact.splToken, // <-- NEW
     label: pact.name,
     message: `Pact payment for ${participant.email || participant.wallet}`,
   }).toString();
@@ -110,6 +112,7 @@ export default function ParticipantPay() {
         recipient: pact.receiverWallet,
         amount: pact.amountPerPerson,
         reference: participant.reference,
+        splToken: pact.splToken, // <-- NEW
       });
 
       await markParticipantPaid(pact.id, participantIndex, sig);
@@ -125,7 +128,10 @@ export default function ParticipantPay() {
       <div className="relative z-10 max-w-2xl mx-auto p-6 bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl shadow-lg text-center">
         <h2 className="text-3xl font-semibold mb-4">Pay for: {pact.name}</h2>
         <div className="text-gray-400 mb-6">
-          <p>You owe {pact.amountPerPerson} SOL to {pact.receiverWallet}</p>
+          <p>You owe {pact.amountPerPerson} {pact.splToken ? 'Token' : 'SOL'} to {pact.receiverWallet}</p>
+          {pact.splToken && (
+            <p className="text-xs text-gray-500 font-mono mt-1 truncate px-4">Token: {pact.splToken}</p>
+          )}
           <p>Due: {new Date(pact.dueDate).toLocaleString()}</p>
         </div>
 
