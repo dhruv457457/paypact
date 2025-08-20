@@ -1,13 +1,11 @@
 // src/pages/Profile.tsx
 import React, { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { useWeb3Auth, useWeb3AuthConnect, useWeb3AuthDisconnect } from "@web3auth/modal/react";
+import { useWeb3Auth, useWeb3AuthConnect } from "@web3auth/modal/react";
 import { useSolanaWallet } from "@web3auth/modal/react/solana";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { listPactsByCreator, listPactsForWallet } from "../lib/pacts";
-import { FaWallet, FaHourglassHalf, FaStar, FaCheckCircle as FaCheckCircleSolid } from "react-icons/fa";
-
-// ... (SVG and StatCard components remain the same)
+import { FaWallet, FaPlusSquare, FaUsers, FaSyncAlt, FaUser } from "react-icons/fa";
 
 const StatCard = ({ icon, title, value, isLoading }: { icon: React.ReactNode; title: string; value: string | number; isLoading: boolean }) => (
     <div className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl p-4 flex flex-col justify-between">
@@ -25,25 +23,16 @@ const StatCard = ({ icon, title, value, isLoading }: { icon: React.ReactNode; ti
     </div>
 );
 
-
 export default function Profile() {
   const { status } = useWeb3Auth();
   const { connect, isConnected, loading: connectLoading } = useWeb3AuthConnect();
-  const { disconnect, loading: disconnectLoading } = useWeb3AuthDisconnect();
   const { accounts, connection } = useSolanaWallet();
 
-  // ... (rest of the states and functions remain the same)
   const [balance, setBalance] = useState<number | null>(null);
   const [loadingBalance, setLoadingBalance] = useState(false);
-  
   const [organizerPacts, setOrganizerPacts] = useState<any[]>([]);
   const [participantPacts, setParticipantPacts] = useState<any[]>([]);
   const [loadingPacts, setLoadingPacts] = useState(false);
-
-  // Settings
-  const [showOrganizedPacts, setShowOrganizedPacts] = useState(true);
-  const [showParticipantPacts, setShowParticipantPacts] = useState(true);
-  
   const [activeTab, setActiveTab] = useState("Activity");
 
   const addressAvailable = accounts && accounts.length > 0;
@@ -82,41 +71,38 @@ export default function Profile() {
     }
   }, [connection, accounts, isConnected]);
 
-  const { pendingBalance, reputationScore, completedTxs, activityFeed } = useMemo(() => {
-      let pending = 0;
-      let completed = 0;
-      let score = 0;
-      let feed: any[] = [];
+  const { pactsOrganized, pactsJoined, totalVolumePaid, activityFeed, allPacts } = useMemo(() => {
+    let volumePaid = 0;
+    let feed: any[] = [];
 
-      participantPacts.forEach(pact => {
-          const myParticipantInfo = pact.participants.find((p: any) => p.wallet === walletAddress);
-          if (myParticipantInfo && !myParticipantInfo.paid) {
-              pending += pact.amountPerPerson;
-          }
-          if (myParticipantInfo && myParticipantInfo.paid) {
-              completed++;
-              score += 5; // +5 for each pact paid
-              feed.push({ type: 'Paid Pact', name: pact.name, date: myParticipantInfo.paidAt || pact.createdAt?.toDate(), amount: pact.amountPerPerson, status: 'Completed' });
-          }
-      });
-      
-      organizerPacts.forEach(pact => {
-          feed.push({ type: 'Created Pact', name: pact.name, date: pact.createdAt?.toDate(), status: 'Created' });
-          const isPactComplete = pact.participants.every((p: any) => p.paid);
-          if (isPactComplete) {
-            score += 10; // +10 for each completed pact organized
-            completed += pact.participants.length;
-          }
-      });
-      
-      feed.sort((a,b) => (b.date || 0) - (a.date || 0));
+    participantPacts.forEach(pact => {
+        const myParticipantInfo = pact.participants.find((p: any) => p.wallet === walletAddress);
+        if (myParticipantInfo && myParticipantInfo.paid) {
+            volumePaid += pact.amountPerPerson;
+            feed.push({ type: 'Paid Pact', name: pact.name, date: myParticipantInfo.paidAt || pact.createdAt?.toDate(), amount: pact.amountPerPerson, status: 'Completed' });
+        }
+    });
+    
+    organizerPacts.forEach(pact => {
+        feed.push({ type: 'Created Pact', name: pact.name, date: pact.createdAt?.toDate(), status: 'Created' });
+    });
+    
+    feed.sort((a,b) => (b.date || 0) - (a.date || 0));
 
-      return {
-          pendingBalance: pending.toFixed(4),
-          reputationScore: score,
-          completedTxs: completed,
-          activityFeed: feed
-      };
+    const combinedPacts = [...organizerPacts];
+    participantPacts.forEach(pact => {
+        if (!combinedPacts.find(op => op.id === pact.id)) {
+            combinedPacts.push(pact);
+        }
+    });
+
+    return {
+        pactsOrganized: organizerPacts.length,
+        pactsJoined: participantPacts.length,
+        totalVolumePaid: volumePaid.toFixed(4),
+        activityFeed: feed,
+        allPacts: combinedPacts
+    };
 
   }, [organizerPacts, participantPacts, walletAddress]);
 
@@ -145,31 +131,34 @@ export default function Profile() {
   }
 
   return (
-    // ... (rest of the JSX remains the same)
     <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-14">
       <div className="relative z-10 lg:px-40 mx-auto p-6 space-y-8 border-t border-[#1C1C1E]">
-        <div>
-            <h2 className="text-3xl font-semibold text-white">Dashboard</h2>
-            <p className="text-gray-400 mt-1">Welcome back, here is your overview.</p>
+        <div className="flex justify-between items-start">
+            <div>
+                <h2 className="text-3xl font-semibold text-white">Dashboard</h2>
+                <p className="text-gray-400 mt-1">Welcome back, here is your overview.</p>
+            </div>
         </div>
 
         {/* --- STATS --- */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             <StatCard icon={<FaWallet />} title="Wallet Balance" value={`${balance !== null ? balance.toFixed(4) : '--'} SOL`} isLoading={loadingBalance} />
-            <StatCard icon={<FaHourglassHalf />} title="Pending Balance" value={`${pendingBalance} SOL`} isLoading={loadingPacts} />
-            <StatCard icon={<FaStar />} title="Reputation Score" value={reputationScore} isLoading={loadingPacts} />
-            <StatCard icon={<FaCheckCircleSolid />} title="Completed Txs" value={completedTxs} isLoading={loadingPacts} />
+            <StatCard icon={<FaPlusSquare />} title="Pacts Organized" value={pactsOrganized} isLoading={loadingPacts} />
+            <StatCard icon={<FaUsers />} title="Pacts Joined" value={pactsJoined} isLoading={loadingPacts} />
+            <StatCard icon={<FaSyncAlt />} title="Total Volume Paid" value={`${totalVolumePaid} SOL`} isLoading={loadingPacts} />
         </div>
 
         {/* --- TABS --- */}
-        <div className="border-b border-[#1C1C1E]">
-            <nav className="-mb-px flex space-x-6">
-                {["Activity", "My Pacts", "Settings"].map(tab => (
-                    <button key={tab} onClick={() => setActiveTab(tab)} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab ? 'border-purple-500 text-purple-400' : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'}`}>
-                        {tab}
-                    </button>
-                ))}
-            </nav>
+        <div className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl p-2 flex space-x-2">
+            {["Activity", "Pacts"].map(tab => (
+                <button 
+                    key={tab} 
+                    onClick={() => setActiveTab(tab)} 
+                    className={`flex-1 text-center py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? 'bg-[#1C1C1E] text-white' : 'text-gray-400 hover:bg-[#151517] hover:text-white'}`}
+                >
+                    {tab}
+                </button>
+            ))}
         </div>
 
         {/* --- TAB CONTENT --- */}
@@ -193,54 +182,65 @@ export default function Profile() {
                     </div>
                 </div>
             )}
-            {activeTab === 'My Pacts' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div>
-                        <h3 className="text-xl font-semibold text-white mb-4">Pacts You've Organized</h3>
-                        <div className="space-y-3">
-                            {organizerPacts.length > 0 ? organizerPacts.map(pact => (
-                                <Link to={`/pact/${pact.id}`} key={pact.id} className="block bg-[#1C1C1E] p-3 rounded-md border border-[#3A3A3C] hover:border-purple-500 transition-colors">
-                                    <p className="font-semibold text-purple-400">{pact.name}</p>
-                                    <p className="text-sm text-gray-400">Due: {new Date(pact.dueDate).toLocaleDateString()}</p>
+            {activeTab === 'Pacts' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {loadingPacts ? (
+                        <p className="text-gray-400 col-span-full text-center">Loading your pacts...</p>
+                    ) : allPacts.length > 0 ? (
+                        allPacts.map((p: any) => {
+                            const paidCount = (p.participants || []).filter(
+                                (x: any) => x.paid
+                            ).length;
+                            const total = (p.participants || []).length;
+                            const progress = total > 0 ? (paidCount / total) * 100 : 0;
+                            const totalCollected = paidCount * p.amountPerPerson;
+
+                            return (
+                                <Link
+                                    to={`/pact/${p.id}`}
+                                    key={p.id}
+                                    className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl shadow-lg transition-all duration-300 transform hover:-translate-y-1 flex flex-col justify-between"
+                                >
+                                    <div className="p-5">
+                                        <h3 className="font-semibold text-lg text-white truncate">
+                                            {p.name}
+                                        </h3>
+                                        <p className="text-sm text-gray-400 mt-1">
+                                            <span className="font-semibold text-green-400">
+                                                {p.amountPerPerson} SOL
+                                            </span>{" "}
+                                            per person
+                                        </p>
+                                        <div className="mt-4">
+                                            <div className="flex justify-between items-center text-xs text-gray-400 mb-1">
+                                                <span>Collection Progress</span>
+                                                <span>
+                                                    {paidCount} / {total} Paid
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-gray-800 rounded-full h-2 border border-gray-700">
+                                                <div
+                                                    className="bg-gradient-to-r from-[#7f48de] to-[#7437DC] h-full rounded-full"
+                                                    style={{ width: `${progress}%` }}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className=" px-5 py-3 border-t border-[#1C1C1E] text-sm flex justify-between items-center">
+                                        <div className="flex items-center gap-2 text-gray-400">
+                                            <FaUser />
+                                            <span>{total} Participants</span>
+                                        </div>
+                                        <span className="font-semibold text-green-400">
+                                            {totalCollected.toFixed(4)} SOL
+                                        </span>
+                                    </div>
                                 </Link>
-                            )) : <p className="text-gray-500">You haven't organized any pacts.</p>}
-                        </div>
-                     </div>
-                     <div>
-                        <h3 className="text-xl font-semibold text-white mb-4">Pacts You're In</h3>
-                        <div className="space-y-3">
-                           {participantPacts.length > 0 ? participantPacts.map(pact => (
-                                <Link to={`/pact/${pact.id}`} key={pact.id} className="block bg-[#1C1C1E] p-3 rounded-md border border-[#3A3A3C] hover:border-purple-500 transition-colors">
-                                    <p className="font-semibold text-purple-400">{pact.name}</p>
-                                    <p className="text-sm text-gray-400">Due: {new Date(pact.dueDate).toLocaleDateString()}</p>
-                                </Link>
-                            )) : <p className="text-gray-500">You haven't joined any pacts.</p>}
-                        </div>
-                     </div>
-                </div>
-            )}
-            {activeTab === 'Settings' && (
-                <div>
-                    <h3 className="text-xl font-semibold text-white mb-4">Profile Settings</h3>
-                     <div className="space-y-4">
-                        <div className="flex items-center">
-                            <input type="checkbox" id="showOrganized" checked={showOrganizedPacts} onChange={(e) => setShowOrganizedPacts(e.target.checked)} className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500"/>
-                            <label htmlFor="showOrganized" className="ml-3 block text-sm text-gray-300">Show Pacts I've Organized on public profile</label>
-                        </div>
-                        <div className="flex items-center">
-                            <input type="checkbox" id="showParticipant" checked={showParticipantPacts} onChange={(e) => setShowParticipantPacts(e.target.checked)} className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500"/>
-                            <label htmlFor="showParticipant" className="ml-3 block text-sm text-gray-300">Show Pacts I'm In on public profile</label>
-                        </div>
-                        <div className="pt-4">
-                             <button
-                                onClick={() => disconnect({ cleanup: true })}
-                                disabled={disconnectLoading}
-                                className="font-semibold py-2 px-6 rounded-md transition-colors bg-red-800 hover:bg-red-700 disabled:bg-gray-600"
-                            >
-                                {disconnectLoading ? "Disconnecting..." : "Disconnect Wallet"}
-                            </button>
-                        </div>
-                    </div>
+                            );
+                        })
+                    ) : (
+                        <p className="text-gray-500 col-span-full text-center">You are not part of any pacts yet.</p>
+                    )}
                 </div>
             )}
         </div>

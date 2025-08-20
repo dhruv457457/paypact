@@ -6,7 +6,6 @@ import Home from "./pages/Home";
 import CreatePact from "./pages/CreatePact";
 import NotFound from "./pages/NotFound";
 import PactDetails from "./pages/PactDetails";
-import OrganizerDashboard from "./pages/OrganizerDashboard";
 import ParticipantPay from "./pages/ParticipantPay";
 import MyPacts from "./pages/MyPacts";
 import LandingPage from "./pages/LandingPage";
@@ -23,7 +22,6 @@ const App: React.FC = () => {
             <Route path="/" element={<Home />} />
             <Route path="/create" element={<CreatePact />} />
             <Route path="/pact/:id" element={<PactDetails />} />
-            <Route path="/organizer" element={<OrganizerDashboard />} />
             <Route path="*" element={<NotFound />} />
             <Route path="/pay/:pactId/:index" element={<ParticipantPay />} />
             <Route path="/my" element={<MyPacts />} />

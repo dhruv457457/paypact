@@ -36,10 +36,9 @@ export function NavbarDemo() {
   const navItems = [
     { name: "Home", link: "/home" },
     { name: "Create Pact", link: "/create" },
-    { name: "Dashboard", link: "/organizer" },
     { name: "My Pacts", link: "/my" },
     { name: "Contacts", link: "/contacts" },
-    { name: "Profile", link: "/profile" },
+    { name: "Dashboard", link: "/profile" },
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
