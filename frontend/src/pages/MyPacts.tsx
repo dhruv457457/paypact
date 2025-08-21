@@ -2,7 +2,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSolanaWallet } from "@web3auth/modal/react/solana";
-import { useWeb3Auth } from "@web3auth/modal/react"; // Import useWeb3Auth
+import { useWeb3Auth } from "@web3auth/modal/react";
 import { ensureFirebaseAuth } from "../lib/firebase";
 import {
   listPactsForWallet,
@@ -23,7 +23,7 @@ type PactDoc = {
 };
 
 export default function MyPacts() {
-  const { status } = useWeb3Auth(); // Get wallet status
+  const { status } = useWeb3Auth();
   const { accounts } = useSolanaWallet();
   const wallet = accounts?.[0] || "";
 
@@ -39,14 +39,12 @@ export default function MyPacts() {
       await navigator.clipboard.writeText(`${window.location.origin}${link}`);
       setCopiedLink(link);
 
-      // Reset after 2 sec to show "Copied!"
       setTimeout(() => setCopiedLink(null), 2000);
     } catch (e) {
       console.error("Copy failed", e);
     }
   };
 
-  // 1) Wait for Firebase auth (anon in dev) BEFORE any Firestore reads
   useEffect(() => {
     (async () => {
       try {
@@ -59,7 +57,6 @@ export default function MyPacts() {
     })();
   }, []);
 
-  // 2) Load pacts once auth is ready and wallet is connected
   useEffect(() => {
     if (!ready) return;
     if (!wallet) { setLoading(false); return; }
@@ -88,40 +85,31 @@ export default function MyPacts() {
   }, [pacts, wallet]);
 
   if (status === "not_ready" || status === "connecting") {
-    return (
-      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center">
-        <p className="text-gray-400">Initializing Wallet...</p>
-      </div>
-    );
+    return <div className="text-center text-gray-500 py-10">Initializing Wallet...</div>;
   }
 
   if (!wallet) {
     return (
-      <div className="relative min-h-screen bg-[#09090B] text-white flex items-center justify-center">
-          <div className="text-center">
-              <h2 className="text-2xl font-semibold text-white mb-2">View Your Pacts</h2>
-              <p className="text-gray-500">Please connect your wallet to see the pacts you're a part of.</p>
-          </div>
+      <div className="text-center text-gray-500 py-10">
+          <h2 className="text-lg font-semibold text-white mb-2">Connect Your Wallet</h2>
+          <p>Please connect your wallet to see the pacts you're a part of.</p>
       </div>
     );
   }
 
-  if (loading) return <div className="p-6">Loading…</div>;
-  if (err) return <div className="p-6 text-red-600">{err}</div>;
+  if (loading) return <div className="text-center text-gray-500 py-10">Loading your pacts...</div>;
+  if (err) return <div className="text-center text-red-500 py-10">{err}</div>;
 
  return (
-    <div className="relative min-h-screen bg-[#09090B] text-white overflow-hidden pt-14">
-      <div className="relative z-10 lg:px-40 mx-auto p-6 space-y-8 border-t border-[#1C1C1E]">
-        <h2 className="text-3xl font-semibold text-white">My Pacts</h2>
-
+    <div className="space-y-6">
+        <h3 className="text-xl font-semibold text-white">My Pacts</h3>
         {rows.length === 0 ? (
-          <div className="text-center text-gray-500 py-10">
+          <div className="text-center text-gray-500 py-10 border-2 border-dashed border-[#1C1C1E] rounded-xl">
             <p>You are not a participant in any pacts yet.</p>
             <p className="mt-2">When someone adds you to a pact, it will appear here.</p>
           </div>
         ) : (
-          <div className="space-y-6">
-            {rows.map(({ pact, idx, me, paidCount, total }) => {
+            rows.map(({ pact, idx, me, paidCount, total }) => {
               const myStatus = me?.paid ? "Paid" : "Unpaid";
               const myLink = idx >= 0 ? `/pay/${pact.id}/${idx}` : null;
               const progress = total > 0 ? (paidCount / total) * 100 : 0;
@@ -178,10 +166,8 @@ export default function MyPacts() {
                   )}
                 </div>
               );
-            })}
-          </div>
+            })
         )}
       </div>
-    </div>
   );
 }

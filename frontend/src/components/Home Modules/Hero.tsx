@@ -1,4 +1,6 @@
+// src/components/Home Modules/Hero.tsx
 import React from "react";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -48,14 +50,16 @@ const HeroSection = () => {
 
         {/* CTA Buttons */}
         <div className="flex flex-col mb-16 border-y border-[#1C1C1E] w-full justify-center items-center pb-20 relative">
-          <button className="px-20 py-3 bg-transparent border-x border-[#1C1C1E] text-white hover:bg-gray-900 transition-colors">
+          <button className="px-20 py-3 bg-transparent border-x border-[#1C1C1E] text-white hover:bg-gray-900 transition-colors cursor-pointer">
             Learn More
           </button>
 
           <div className="relative">
-            <button className="px-20 py-3 bg-[#7f48de] text-white hover:bg-[#7437DC] transition-colors font-medium relative z-10">
-              Get Started
-            </button>
+            <Link to="/profile">
+              <button className="px-20 py-3 bg-[#7f48de] text-white hover:bg-[#7437DC] transition-colors font-medium relative z-10 cursor-pointer">
+                Get Started
+              </button>
+            </Link>
             {/* Glow below the button */}
             <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-4xl h-16 bg-[#201735] blur-2xl rounded-full"></div>
           </div>

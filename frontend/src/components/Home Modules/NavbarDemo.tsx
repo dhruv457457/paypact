@@ -36,8 +36,6 @@ export function NavbarDemo() {
   const navItems = [
     { name: "Home", link: "/home" },
     { name: "Create Pact", link: "/create" },
-    { name: "My Pacts", link: "/my" },
-    { name: "Contacts", link: "/contacts" },
     { name: "Dashboard", link: "/profile" },
   ];
 

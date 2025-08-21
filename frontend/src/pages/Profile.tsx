@@ -5,7 +5,10 @@ import { useWeb3Auth, useWeb3AuthConnect } from "@web3auth/modal/react";
 import { useSolanaWallet } from "@web3auth/modal/react/solana";
 import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { listPactsByCreator, listPactsForWallet } from "../lib/pacts";
-import { FaWallet, FaPlusSquare, FaUsers, FaSyncAlt, FaUser } from "react-icons/fa";
+import { FaWallet, FaPlusSquare, FaUsers, FaSyncAlt, FaUser, FaCopy } from "react-icons/fa";
+import PaymentQR from "../components/PaymentQR";
+import MyPacts from "./MyPacts"; // Import MyPacts
+import ContactsPage from "./ContactsPage"; // Import ContactsPage
 
 const StatCard = ({ icon, title, value, isLoading }: { icon: React.ReactNode; title: string; value: string | number; isLoading: boolean }) => (
     <div className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl p-4 flex flex-col justify-between">
@@ -34,6 +37,7 @@ export default function Profile() {
   const [participantPacts, setParticipantPacts] = useState<any[]>([]);
   const [loadingPacts, setLoadingPacts] = useState(false);
   const [activeTab, setActiveTab] = useState("Activity");
+  const [copied, setCopied] = useState(false);
 
   const addressAvailable = accounts && accounts.length > 0;
   const walletAddress = addressAvailable ? accounts[0] : null;
@@ -44,7 +48,7 @@ export default function Profile() {
         setLoadingBalance(true);
         const lamports = await connection.getBalance(new PublicKey(accounts[0]));
         setBalance(lamports / LAMPORTS_PER_SOL);
-      } catch (err: any) { console.error(err); setBalance(null); } 
+      } catch (err: any) { console.error(err); setBalance(null); }
       finally { setLoadingBalance(false); }
     } else { setBalance(null); }
   };
@@ -59,7 +63,7 @@ export default function Profile() {
             ]);
             setOrganizerPacts(organized);
             setParticipantPacts(participating);
-        } catch (error) { console.error("Failed to fetch pacts:", error); } 
+        } catch (error) { console.error("Failed to fetch pacts:", error); }
         finally { setLoadingPacts(false); }
     }
   }
@@ -82,11 +86,11 @@ export default function Profile() {
             feed.push({ type: 'Paid Pact', name: pact.name, date: myParticipantInfo.paidAt || pact.createdAt?.toDate(), amount: pact.amountPerPerson, status: 'Completed' });
         }
     });
-    
+
     organizerPacts.forEach(pact => {
         feed.push({ type: 'Created Pact', name: pact.name, date: pact.createdAt?.toDate(), status: 'Created' });
     });
-    
+
     feed.sort((a,b) => (b.date || 0) - (a.date || 0));
 
     const combinedPacts = [...organizerPacts];
@@ -105,6 +109,14 @@ export default function Profile() {
     };
 
   }, [organizerPacts, participantPacts, walletAddress]);
+
+  const handleCopy = () => {
+    if (walletAddress) {
+        navigator.clipboard.writeText(walletAddress);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (status === 'not_ready' || status === 'connecting') {
     return (
@@ -150,10 +162,10 @@ export default function Profile() {
 
         {/* --- TABS --- */}
         <div className="bg-[#0C0C0E] border border-[#1C1C1E] rounded-xl p-2 flex space-x-2">
-            {["Activity", "Pacts"].map(tab => (
-                <button 
-                    key={tab} 
-                    onClick={() => setActiveTab(tab)} 
+            {["Activity", "All Pacts", "My Pacts", "Contacts", "My Wallet"].map(tab => (
+                <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
                     className={`flex-1 text-center py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === tab ? 'bg-[#1C1C1E] text-white' : 'text-gray-400 hover:bg-[#151517] hover:text-white'}`}
                 >
                     {tab}
@@ -182,7 +194,7 @@ export default function Profile() {
                     </div>
                 </div>
             )}
-            {activeTab === 'Pacts' && (
+            {activeTab === 'All Pacts' && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {loadingPacts ? (
                         <p className="text-gray-400 col-span-full text-center">Loading your pacts...</p>
@@ -243,6 +255,25 @@ export default function Profile() {
                     )}
                 </div>
             )}
+             {activeTab === 'My Wallet' && walletAddress &&(
+                <div className="flex flex-col items-center justify-center text-center">
+                    <h3 className="text-xl font-semibold text-white mb-4">Your Wallet Address</h3>
+                    <div className="p-4 bg-black/20 rounded-xl">
+                        <PaymentQR url={`solana:${walletAddress}`} />
+                    </div>
+                    <div className="mt-4 p-3 bg-[#1C1C1E] border border-[#3A3A3C] rounded-md text-sm font-mono text-gray-300 max-w-full overflow-x-auto">
+                        {walletAddress}
+                    </div>
+                    <button
+                        onClick={handleCopy}
+                        className="mt-4 flex items-center gap-2 px-4 py-2 bg-[#7f48de] hover:bg-[#7437DC] text-white font-semibold rounded-md transition-colors"
+                    >
+                        <FaCopy /> {copied ? 'Copied!' : 'Copy Address'}
+                    </button>
+                </div>
+            )}
+            {activeTab === 'Contacts' && <ContactsPage />}
+            {activeTab === 'My Pacts' && <MyPacts />}
         </div>
       </div>
     </div>
