@@ -55,7 +55,7 @@ const HeroSection = () => {
           </button>
 
           <div className="relative">
-            <Link to="/profile">
+            <Link to="/dashboard">
               <button className="px-20 py-3 bg-[#7f48de] text-white hover:bg-[#7437DC] transition-colors font-medium relative z-10 cursor-pointer">
                 Get Started
               </button>
