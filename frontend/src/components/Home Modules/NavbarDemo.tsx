@@ -34,9 +34,9 @@ export function NavbarDemo() {
   const addressAvailable = accounts && accounts.length > 0;
 
   const navItems = [
-    { name: "Home", link: "/home" },
+    { name: "Home", link: "/" },
     { name: "Create Pact", link: "/create" },
-    { name: "Dashboard", link: "/profile" },
+    { name: "Dashboard", link: "/dashboard" },
   ];
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
