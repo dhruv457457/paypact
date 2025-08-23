@@ -9,7 +9,8 @@ import { FaUserPlus, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 export default function CreatePact() {
   const { accounts } = useSolanaWallet();
   const wallet = accounts?.[0] || "";
-
+// ✅ Correct way
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   // State for form inputs
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
@@ -102,11 +103,11 @@ export default function CreatePact() {
 
       const pactId = await createPact(pactData);
 
-      await fetch("http://localhost:3001/send-pact-emails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...pactData, pactId }),
-      });
+  await fetch(`${API_BASE_URL}/send-pact-emails`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ ...pactData, pactId }),
+});
 
       setSuccess(`Pact created successfully! Participants are being notified.`);
 
