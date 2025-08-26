@@ -13,7 +13,7 @@ app.use(express.json());
 // Use environment variables for credentials
 const EMAIL_USER = process.env.EMAIL_USER;
 const EMAIL_PASS = process.env.EMAIL_PASS;
-
+const DOMAIN =process.env.DOMAIN;
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -37,7 +37,7 @@ app.post("/send-pact-emails", async (req, res) => {
         <p>Hello,</p>
         <p>You have been invited to a pact titled <b>${name}</b> on PayPact. 🤝</p>
         <p>Your share is <b>${amountPerPerson}</b> SOL, due by ${new Date(dueDate).toLocaleString()}.</p>
-        <p>To view the pact and pay your share, click here: <a href="http://localhost:5173/pact/${pactId}">View Pact Details</a></p>
+        <p>To view the pact and pay your share, click here: <a href="${DOMAIN}/pact/${pactId}">View Pact Details</a></p>
         <p>Thanks,<br/>The PayPact Team</p>
       `;
 
