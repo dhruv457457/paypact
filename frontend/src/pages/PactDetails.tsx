@@ -363,14 +363,6 @@ export default function PactDetails() {
               {/* Action buttons */}
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col sm:flex-row gap-2 w-full">
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 text-xs px-3 py-2.5 rounded-md bg-[#1C1C1E] border border-[#3A3A3C] hover:bg-[#2a2a2d] transition-colors"
-                  >
-                    <FaExternalLinkAlt /> Open in Wallet
-                  </a>
                   <button
                     className="flex-1 flex items-center justify-center gap-2 text-xs px-3 py-2.5 rounded-md bg-[#1C1C1E] border border-[#3A3A3C] hover:bg-[#2a2a2d] transition-colors"
                     onClick={() => navigator.clipboard.writeText(url)}

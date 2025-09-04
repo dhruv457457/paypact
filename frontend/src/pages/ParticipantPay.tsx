@@ -253,14 +253,7 @@ export default function ParticipantPay() {
               Scan with a mobile wallet or use a button below.
             </div>
             <div className="flex flex-col sm:flex-row justify-center gap-4 mt-4">
-              <a
-                href={payUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full px-4 py-3 bg-[#1C1C1E] border border-[#3A3A3C] text-white rounded-md hover:border-purple-500 transition-colors flex items-center justify-center gap-2"
-              >
-                <FaMoneyBillWave /> Open in External Wallet
-              </a>
+          
               {connected && (
                 <button
                   onClick={handlePayWithWalletClick}
